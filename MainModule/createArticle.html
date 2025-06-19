@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布新文章</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            padding: 0 0 20px 0;
+            overflow-x: hidden;
+        }
+        
+        .navbar {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: #fff;
+            border-radius: 0;
+            padding: 15px 30px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            color: #3498db;
+            font-size: 24px;
+            font-weight: 900;
+            text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: #8e44ad;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+        
+        .nav-links a.active {
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            color: white;
+        }
+        
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            border-radius: 2px;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 1.2fr 2.3fr 1.2fr; /* 三栏 */
+            gap: 25px;
+            max-width: 1300px;
+            margin: 0 auto;
+            overflow-x: hidden;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .sidebar {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        .sidebar-right {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        .user-profile {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .avatar i {
+            z-index: 2;
+        }
+        
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            z-index: 1;
+            animation: rotate 15s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .user-profile h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .user-id {
+            color: #777;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 25px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-item .count {
+            font-size: 28px;
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+        
+        .stat-item .label {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .user-bio {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 15px 0;
+            padding: 0 10px;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn, .create-blog-btn {
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .btn.outline {
+            background: transparent;
+            border: 2px solid #3498db;
+            color: #3498db;
+            box-shadow: none;
+        }
+        
+        .btn:hover, .create-blog-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+        }
+        
+        .content {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            border-radius: 2px;
+        }
+        
+        .blog-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .blog-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .blog-img {
+            height: 180px;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 60px;
+        }
+        
+        .blog-img i {
+            opacity: 0.8;
+        }
+        
+        .blog-content {
+            padding: 25px;
+        }
+        
+        .blog-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        .blog-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .blog-excerpt {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .blog-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .read-more {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .blog-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            margin: 0 8px;
+        }
+        
+        .create-blog-btn {
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .create-blog-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.5);
+        }
+        
+        .sidebar-left {
+            left: 20px;
+        }
+        
+        .sidebar-right {
+            right: 20px;
+        }
+        
+        /* 表单特定样式 */
+        .form-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-header {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f2f5;
+            text-align: center;
+            position: relative;
+        }
+        
+        .form-header::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            border-radius: 2px;
+        }
+        
+        .form-header h1 {
+            font-size: 42px;
+            background: linear-gradient(135deg, #3498db, #8e44ad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-header p {
+            color: #7f8c8d;
+            font-size: 18px;
+            font-weight: 400;
+        }
+        
+        .form-content {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .right-column {
+            display: none;
+        }
+        
+        .full-width {
+            width: 100%;
+        }
+        
+        .form-group {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            padding: 30px;
+            border-radius: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .form-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .form-group:hover {
+            border-color: #3498db;
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .form-group:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+        }
+        
+        .form-label i {
+            color: #3498db;
+            font-size: 18px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 18px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            background: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1), 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        
+        .content-editor {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid #e9ecef;
+            position: relative;
+        }
+        
+        .content-editor::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+        }
+        
+        .textarea {
+            min-height: 400px;
+            resize: vertical;
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        
+        .textarea:focus {
+            outline: none;
+        }
+        
+        .char-count {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        .tags-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .tag-remove {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .tag-remove:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .tag-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .tag-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 20px;
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(142, 68, 173, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: #3498db;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.15);
+        }
+        
+        .upload-area:hover::before {
+            opacity: 1;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .upload-note {
+            font-size: 14px;
+            color: #7f8c8d;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .preview-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .btn-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f2f5;
+        }
+        
+        .cancel-btn, .publish-btn {
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 160px;
+            justify-content: center;
+        }
+        
+        .cancel-btn {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #e9ecef;
+        }
+        
+        .cancel-btn:hover {
+            background: #e9ecef;
+            color: #495057;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .publish-btn {
+            background: linear-gradient(135deg, #3498db 0%, #8e44ad 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+        
+        .publish-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(135deg, #2980b9 0%, #7d3c98 100%);
+        }
+        
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-right {
+                display: none;
+            }
+            .sidebar {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                align-items: center;
+            }
+            .user-profile {
+                padding: 0;
+            }
+            .btn-group {
+                margin-top: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px 20px;
+            }
+            
+            .blog-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                gap: 30px;
+            }
+            
+            .content {
+                padding: 25px;
+            }
+        }
+        
+        .sidebar-btns .btn {
+            justify-content: center;
+            text-align: center !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-left, .sidebar-right {
+            position: static !important;
+        }
+        
+        /* 用户信息区域样式 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .nav-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .nav-user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .nav-username {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        
+        .nav-user-id {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.2;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .nav-username {
+                font-size: 13px;
+            }
+            
+            .nav-user-id {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-blog"></i>
+            <h1>Fakebook</h1>
+        </div>
+        <div class="user-info">
+            <div class="nav-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="nav-user-details">
+                <span class="nav-username">用户名</span>
+                <span class="nav-user-id">@username</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 左侧栏 - 导航菜单 -->
+        <aside class="sidebar sidebar-left">
+            <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
+                <button class="btn outline" id="homeBtn" onclick="goHome()"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline" onclick="window.location.href='exploration.html'"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline" onclick="window.location.href='../UserModule/editUserInfo.html'"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+                <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
+            </div>
+        </aside>
+        
+        <!-- 中间内容区 - 表单 -->
+        <main class="content">
+            <div class="form-header">
+                <h1><i class="fas fa-feather-alt"></i> 发布文章</h1>
+                <p>分享你的知识和见解</p>
+            </div>
+            
+            <div class="form-content">
+                <!-- 左栏 -->
+                <div class="left-column">
+                    <div class="form-group">
+                        <label class="form-label" for="title">
+                            <i class="fas fa-heading"></i> 文章标题
+                        </label>
+                        <input 
+                            type="text" 
+                            id="title" 
+                            class="form-input" 
+                            placeholder="输入吸引人的标题..." 
+                            maxlength="100"
+                        >
+                        <div class="char-count">
+                            已输入: <span class="word-counter">0</span>/100字符
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="tags">
+                            <i class="fas fa-tags"></i> 文章标签
+                        </label>
+                        <div class="tags-section">
+                            <div class="tags-container" id="tagsContainer">
+                                <!-- 动态标签将会添加到这里 -->
+                            </div>
+                            <input 
+                                type="text" 
+                                id="tagInput" 
+                                class="tag-input" 
+                                placeholder="添加标签..."
+                            >
+                        </div>
+                        <div class="char-count">
+                            最多添加5个标签，按回车添加
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="cover">
+                            <i class="fas fa-image"></i> 封面图片
+                        </label>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <p class="upload-text">点击或拖拽图片到此处上传</p>
+                            <p class="upload-note">推荐尺寸：1200×630像素，支持JPG/PNG格式</p>
+                        </div>
+                        <img src="" id="previewImage" class="preview-image" style="display:none;">
+                        <input type="file" id="cover" accept="image/*" style="display:none;">
+                    </div>
+                </div>
+                
+                <!-- 全宽内容编辑区 -->
+                <div class="full-width">
+                    <div class="form-group content-editor">
+                        <label class="form-label" for="content">
+                            <i class="fas fa-align-left"></i> 文章内容
+                        </label>
+                        <textarea 
+                            id="content" 
+                            class="form-input textarea" 
+                            placeholder="开始撰写你的文章内容..."
+                        ></textarea>
+                        <div class="char-count">
+                            已输入: <span class="word-counter">0</span>字
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <button class="cancel-btn" id="cancelBtn">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+                <button class="publish-btn" id="publishBtn">
+                    <i class="fas fa-paper-plane"></i> 发布
+                </button>
+            </div>
+        </main>
+        
+        <!-- 右侧栏 - 用户信息 -->
+        <aside class="sidebar sidebar-right">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 style="font-size: 22px; margin-bottom: 5px; color: #333;"></h2>
+                <p class="user-id" style="font-size: 15px; color: #777; margin-bottom: 10px;"></p>
+                <p class="user-bio" style="color: #666; font-size: 14px; line-height: 1.5; margin: 10px 0 18px 0;"></p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">0</div>
+                    <div class="label" style="font-size: 13px; color: #777;">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">0</div>
+                    <div class="label" style="font-size: 13px; color: #777;">粉丝</div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // 从localStorage加载用户数据
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            if (!currentUser.username) {
+                alert('请先登录系统');
+                window.location.href = '../UserModule/login.html';
+                return;
+            }
+            
+            // 设置导航栏用户信息
+            const navUsername = document.querySelector('.nav-username');
+            const navUserId = document.querySelector('.nav-user-id');
+            const navAvatar = document.querySelector('.nav-avatar');
+            
+            if (navUsername) {
+                navUsername.textContent = currentUser.username;
+            }
+            if (navUserId) {
+                navUserId.textContent = `@${currentUser.username.toLowerCase()}`;
+            }
+            
+            // 设置导航栏头像
+            if (navAvatar && currentUser.avatar) {
+                navAvatar.innerHTML = '';
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar;
+                avatarImg.alt = currentUser.username;
+                navAvatar.appendChild(avatarImg);
+            } else if (navAvatar) {
+                // 如果没有头像，显示默认图标
+                navAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            // 设置右侧侧边栏用户信息
+            const rightSidebar = document.querySelector('.sidebar-right .user-profile');
+            const rightAvatar = rightSidebar.querySelector('.avatar');
+            const rightUsername = rightSidebar.querySelector('h2');
+            const rightUserId = rightSidebar.querySelector('.user-id');
+            
+            // 设置用户名
+            if (rightUsername) {
+                rightUsername.textContent = currentUser.username;
+            }
+            
+            // 设置用户ID
+            if (rightUserId) {
+                rightUserId.innerHTML = `@${currentUser.username.toLowerCase()} · ID: ${currentUser.studentId || '2023001'}`;
+            }
+            
+            // 设置右侧侧边栏头像
+            if (rightAvatar && currentUser.avatar) {
+                rightAvatar.innerHTML = '';
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar;
+                avatarImg.alt = currentUser.username;
+                avatarImg.style.width = '100%';
+                avatarImg.style.height = '100%';
+                avatarImg.style.borderRadius = '50%';
+                avatarImg.style.objectFit = 'cover';
+                rightAvatar.appendChild(avatarImg);
+            } else if (rightAvatar) {
+                // 如果没有头像，显示默认图标
+                rightAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            // 添加用户简介到右侧侧边栏
+            const existingBio = rightSidebar.querySelector('.user-bio');
+            if (existingBio) {
+                existingBio.remove();
+            }
+            
+            const bioElement = document.createElement('p');
+            bioElement.className = 'user-bio';
+            bioElement.textContent = currentUser.bio || '这个人很懒，什么也没留下。';
+            rightSidebar.insertBefore(
+                bioElement, 
+                rightSidebar.querySelector('.stats')
+            );
+            
+            // 显示文章数量
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const userArticles = articles.filter(article => article.author === currentUser.username);
+            const rightStats = document.querySelector('.sidebar-right .stats');
+            if (rightStats) {
+                const articleCount = rightStats.querySelector('.stat-item:first-child .count');
+                if (articleCount) {
+                    articleCount.textContent = userArticles.length;
+                }
+            }
+            
+            // 显示粉丝数
+            const followersCount = currentUser.followers ? currentUser.followers.length : 0;
+            if (rightStats) {
+                const followerCount = rightStats.querySelector('.stat-item:last-child .count');
+                if (followerCount) {
+                    followerCount.textContent = followersCount;
+                }
+            }
+            
+            // 退出登录功能
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = '../UserModule/login.html';
+            });
+            
+            // 为新建文章按钮添加跳转功能
+            document.getElementById('createArticleBtn').addEventListener('click', function() {
+                window.location.href = 'createArticle.html';
+            });
+            
+            // 文章标题字符计数器
+            const titleInput = document.getElementById('title');
+            const titleCounter = titleInput.parentElement.querySelector('.word-counter');
+            
+            titleInput.addEventListener('input', function() {
+                titleCounter.textContent = this.value.length;
+            });
+            
+            // 文章内容字符计数器
+            const contentInput = document.getElementById('content');
+            const contentCounter = contentInput.parentElement.querySelector('.word-counter');
+            
+            contentInput.addEventListener('input', function() {
+                contentCounter.textContent = this.value.length;
+            });
+            
+            // 封面图片上传功能
+            const uploadArea = document.getElementById('uploadArea');
+            const coverInput = document.getElementById('cover');
+            const previewImage = document.getElementById('previewImage');
+            
+            uploadArea.addEventListener('click', function() {
+                coverInput.click();
+            });
+            
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#3498db';
+                this.style.background = 'rgba(52, 152, 219, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#cbd5e0';
+                this.style.background = '#f8f9fa';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#cbd5e0';
+                this.style.background = '#f8f9fa';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    handleImageUpload(files[0]);
+                }
+            });
+            
+            coverInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+            
+            function handleImageUpload(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewImage.style.display = 'block';
+                    uploadArea.style.display = 'none';
+                }
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // 标签功能
+            const tagInput = document.getElementById('tagInput');
+            const tagsContainer = document.getElementById('tagsContainer');
+            const tags = [];
+            
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim() !== '') {
+                    e.preventDefault();
+                    
+                    if (tags.length >= 5) {
+                        alert('最多只能添加5个标签');
+                        return;
+                    }
+                    
+                    // 创建新标签
+                    const tagValue = this.value.trim();
+                    if (tags.includes(tagValue)) {
+                        alert('标签已存在');
+                        return;
+                    }
+                    
+                    tags.push(tagValue);
+                    
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `
+                        ${tagValue}
+                        <span class="tag-remove">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    `;
+                    
+                    tagsContainer.appendChild(tagElement);
+                    
+                    // 添加删除功能
+                    const removeBtn = tagElement.querySelector('.tag-remove');
+                    removeBtn.addEventListener('click', function() {
+                        const index = tags.indexOf(tagValue);
+                        if (index > -1) {
+                            tags.splice(index, 1);
+                        }
+                        tagsContainer.removeChild(tagElement);
+                    });
+                    
+                    // 清空输入框
+                    this.value = '';
+                }
+            });
+            
+            // 发布文章按钮
+            document.getElementById('publishBtn').addEventListener('click', function() {
+                const title = titleInput.value.trim();
+                const content = contentInput.value.trim();
+                
+                if (!title) {
+                    alert('请输入文章标题');
+                    titleInput.focus();
+                    return;
+                }
+                
+                // 已删除对文章内容长度的限制
+                
+                // 显示加载状态
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发布中...';
+                this.disabled = true;
+                
+                // 模拟文章发布过程
+                setTimeout(() => {
+                    // 创建文章数据对象，包含所有必需的字段
+                    const articleData = {
+                        id: Date.now().toString(), // 添加唯一ID
+                        title: title,
+                        content: content,
+                        tags: tags,
+                        author: currentUser.username,
+                        authorAvatar: currentUser.avatar || '../images/default_avatar.jpg',
+                        date: new Date().toISOString(),
+                        coverImage: previewImage.src || null,
+                        likes: 0,  // 点赞数
+                        comments: [],  // 评论
+                        views: 0  // 阅读数
+                    };
+                    
+                    // 从localStorage获取现有文章
+                    const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+                    
+                    // 将新文章添加到数组开头
+                    articles.unshift(articleData);
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('articles', JSON.stringify(articles));
+                    
+                    // 直接跳转到主页，不显示弹窗
+                    window.location.href = 'homepage.html';
+                }, 1500);
+            });
+            
+            // 取消按钮
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                if (confirm('确定要取消发布吗？未保存的内容将丢失。')) {
+                    window.location.href = 'homepage.html';
+                }
+            });
+            
+            // 关注按钮
+            document.getElementById('followBtn').addEventListener('click', function() {
+                window.location.href = 'following.html';
+            });
+        });
+
+        function goHome() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            localStorage.setItem('viewUser', JSON.stringify(currentUser));
+            window.location.href = 'homepage.html';
+        }
+    </script>
+</body>
+</html>
