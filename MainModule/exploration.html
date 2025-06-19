@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探索 - Fakebook</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            padding: 0 0 20px 0;
+            overflow-x: hidden;
+        }
+        
+        .navbar {
+            position: sticky;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            background: #fff;
+            border-radius: 0;
+            padding: 15px 30px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            color: #3498db;
+            font-size: 24px;
+            font-weight: 900;
+            text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: #8e44ad;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+        
+        .nav-links a.active {
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            color: white;
+        }
+        
+        .nav-links a.active::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 3px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            border-radius: 2px;
+        }
+        
+        /* 用户信息区域样式 */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .nav-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .nav-user-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .nav-username {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+        
+        .nav-user-id {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.2;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .nav-username {
+                font-size: 13px;
+            }
+            
+            .nav-user-id {
+                font-size: 11px;
+            }
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 1.2fr 2.3fr 1.2fr; /* 三栏 */
+            gap: 25px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        
+        .sidebar {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        .user-profile {
+            text-align: center;
+            padding: 20px 0;
+        }
+        
+        .avatar {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .avatar i {
+            z-index: 2;
+        }
+        
+        .avatar::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            z-index: 1;
+            animation: rotate 15s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .user-profile h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .user-id {
+            color: #777;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .user-bio {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 15px 0;
+            padding: 0 10px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 25px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-item .count {
+            font-size: 28px;
+            font-weight: 600;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+        
+        .stat-item .label {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn, .create-blog-btn {
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .btn.outline {
+            background: transparent;
+            border: 2px solid #3498db;
+            color: #3498db;
+            box-shadow: none;
+        }
+        
+        .btn:hover, .create-blog-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(to right, #6e8efb, #a777e3);
+        }
+        
+        .content {
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            font-weight: 600;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            border-radius: 2px;
+        }
+
+        /* 搜索框样式 */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 25px;
+            font-size: 16px;
+            background: white;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #777;
+            font-size: 16px;
+        }
+
+        .search-input:focus + .search-icon {
+            color: #3498db;
+        }
+        
+        .blog-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .blog-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .blog-img {
+            height: 180px;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 60px;
+        }
+        
+        .blog-img i {
+            opacity: 0.8;
+        }
+        
+        .blog-content {
+            padding: 25px;
+        }
+        
+        .blog-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: #777;
+            font-size: 14px;
+        }
+        
+        .blog-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .blog-excerpt {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .blog-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .read-more {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .blog-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        /* 修改：移除背景和圆形效果 */
+        .action-btn {
+            color: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px; /* 增加字体大小使其更易读 */
+            margin: 0 8px; /* 添加间距 */
+        }
+        
+        .create-blog-btn {
+            background: linear-gradient(to right, #3498db, #8e44ad);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .create-blog-btn:hover {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.5);
+        }
+        
+        .sidebar-right {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-right {
+                display: none;
+            }
+            .sidebar {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                align-items: center;
+            }
+            .user-profile {
+                padding: 0;
+            }
+            .btn-group {
+                margin-top: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                grid-template-columns: 1fr;
+            }
+            
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .blog-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                gap: 30px;
+            }
+        }
+        
+        .sidebar-btns .btn {
+            justify-content: center;
+            text-align: center !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sidebar-left, .sidebar-right {
+            position: static !important;
+        }
+        
+        /* 排序按钮样式 */
+        .filters {
+            position: relative;
+        }
+        
+        /* 排序按钮固定尺寸 */
+        #sortBtn {
+            min-width: 100px;
+            width: 100px;
+            padding: 12px 20px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            line-height: 1;
+        }
+        
+        #sortBtn i {
+            font-size: 16px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* 作者信息样式 */
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            overflow: hidden;
+        }
+
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .author-name {
+            font-weight: 500;
+            color: #3498db;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .author-name:hover {
+            color: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-blog"></i>
+            <h1>Fakebook</h1>
+        </div>
+        <div class="user-info">
+            <div class="nav-avatar">
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
+            </div>
+            <div class="nav-user-details">
+                <span class="nav-username">John Doe</span>
+                <span class="nav-user-id">@johndoe</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 左侧栏 - 用户信息 -->
+        <aside class="sidebar sidebar-left">
+            <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
+                <button class="btn outline" onclick="window.location.href='homepage.html'"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline active"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+                <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
+            </div>
+        </aside>
+        <!-- 中间内容区 - Fakebook列表 -->
+        <main class="content">
+            <div class="section-header">
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="searchInput" placeholder="搜索文章标题、内容或作者...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+                <div class="filters">
+                    <button class="btn outline" id="sortBtn" onclick="toggleSort()">
+                        <i class="fas fa-clock"></i> 最新
+                    </button>
+                </div>
+            </div>
+            <div class="blog-container" id="blogContainer">
+            </div>
+        </main>
+        <!-- 右侧栏 - 推荐内容 -->
+        <aside class="sidebar sidebar-right">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2 style="font-size: 22px; margin-bottom: 5px; color: #333;"></h2>
+                <p class="user-id" style="font-size: 15px; color: #777; margin-bottom: 10px;"></p>
+                <p class="user-bio" style="color: #666; font-size: 14px; line-height: 1.5; margin: 10px 0 18px 0;"></p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">0</div>
+                    <div class="label" style="font-size: 13px; color: #777;">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">0</div>
+                    <div class="label" style="font-size: 13px; color: #777;">粉丝</div>
+                </div>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- 创建Fakebook按钮 -->
+    <button class="create-blog-btn" id="floatingCreateBtn">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <script>
+        // 全局排序状态
+        let globalCurrentSort = 'latest';
+        let globalSearchTerm = '';
+        
+        // 切换排序方式函数
+        function toggleSort() {
+            console.log('toggleSort函数被调用，当前排序方式:', globalCurrentSort);
+            
+            // 切换排序方式
+            globalCurrentSort = globalCurrentSort === 'latest' ? 'hottest' : 'latest';
+            window.currentSort = globalCurrentSort;
+            
+            console.log('切换后排序方式:', globalCurrentSort);
+            
+            // 更新按钮文本和图标
+            const sortBtn = document.getElementById('sortBtn');
+            if (sortBtn) {
+                const icon = globalCurrentSort === 'latest' ? 'fa-clock' : 'fa-fire';
+                const text = globalCurrentSort === 'latest' ? '最新' : '最热';
+                sortBtn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+            }
+            
+            // 重新加载文章
+            loadArticles();
+        }
+        
+        // 搜索功能
+        function performSearch() {
+            const searchInput = document.getElementById('searchInput');
+            globalSearchTerm = searchInput.value.trim().toLowerCase();
+            loadArticles();
+        }
+        
+        // 从localStorage加载用户数据
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        
+            if (!currentUser.username) {
+                alert('请先登录系统');
+                window.location.href = '../UserModule/login.html';
+                return;
+            }
+            
+            // 设置导航栏用户信息
+            const navUsername = document.querySelector('.nav-username');
+            const navUserId = document.querySelector('.nav-user-id');
+            const navAvatar = document.querySelector('.nav-avatar');
+            
+            if (navUsername) {
+                navUsername.textContent = currentUser.username;
+            }
+            if (navUserId) {
+                navUserId.textContent = `@${currentUser.username.toLowerCase()}`;
+            }
+            
+            // 设置导航栏头像
+            if (navAvatar && currentUser.avatar) {
+                navAvatar.innerHTML = '';
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar;
+                avatarImg.alt = currentUser.username;
+                navAvatar.appendChild(avatarImg);
+            } else if (navAvatar) {
+                // 如果没有头像，显示默认图标
+                navAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            // 设置右侧侧边栏用户信息
+            const rightSidebarUsername = document.querySelector('.user-profile h2');
+            const rightSidebarUserId = document.querySelector('.user-id');
+            const rightSidebarAvatar = document.querySelector('.avatar');
+            
+            if (rightSidebarUsername) {
+                rightSidebarUsername.textContent = currentUser.username;
+            }
+            if (rightSidebarUserId) {
+                rightSidebarUserId.innerHTML = `@${currentUser.username.toLowerCase()} · ID: ${currentUser.studentId || '2023001'}`;
+            }
+            
+            // 显示用户简介
+            const bioElement = document.createElement('p');
+            bioElement.className = 'user-bio';
+            bioElement.textContent = currentUser.bio || '这个人很懒，什么也没留下。';
+            document.querySelector('.user-profile').insertBefore(
+                bioElement, 
+                document.querySelector('.user-profile .stats')
+            );
+            
+            // 设置右侧侧边栏头像
+            if (rightSidebarAvatar && currentUser.avatar) {
+                rightSidebarAvatar.innerHTML = '';
+                const avatarImg = document.createElement('img');
+                avatarImg.src = currentUser.avatar;
+                avatarImg.alt = currentUser.username;
+                avatarImg.style.width = '100%';
+                avatarImg.style.height = '100%';
+                avatarImg.style.borderRadius = '50%';
+                avatarImg.style.objectFit = 'cover';
+                rightSidebarAvatar.appendChild(avatarImg);
+            } else if (rightSidebarAvatar) {
+                // 如果没有头像，显示默认图标
+                rightSidebarAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            // 计算并显示用户统计信息
+            updateUserStats(currentUser.username);
+            
+            // 加载并显示所有文章
+            loadArticles();
+            
+            // 添加搜索功能事件监听
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', performSearch);
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                }
+            });
+            
+            // 退出登录功能
+            document.getElementById('logoutBtn').addEventListener('click', function() {
+                localStorage.removeItem('currentUser');
+                window.location.href = '../UserModule/login.html';
+            });
+            
+            // 新增：关注按钮跳转
+            document.getElementById('followBtn').addEventListener('click', function() {
+                window.location.href = 'following.html';
+            });
+            
+            // 为新建文章按钮添加跳转功能
+            document.getElementById('createArticleBtn').addEventListener('click', function() {
+                window.location.href = 'createArticle.html';
+            });
+
+            // 为编辑资料按钮添加跳转功能
+            document.getElementById('editProfileBtn').addEventListener('click', function() {
+                window.location.href = '../UserModule/editUserInfo.html';
+            });
+            
+            // 为悬浮创建按钮添加跳转功能
+            document.getElementById('floatingCreateBtn').addEventListener('click', function() {
+                window.location.href = 'createArticle.html';
+            });
+            
+            // 设置默认排序方式
+            window.currentSort = 'latest';
+            globalCurrentSort = 'latest';
+        });
+        
+        // 加载所有文章函数
+        function loadArticles() {
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const blogContainer = document.getElementById('blogContainer');
+            
+            // 清空容器
+            blogContainer.innerHTML = '';
+            
+            // 获取所有文章（不过滤特定用户）
+            let allArticles = [...articles];
+            
+            // 应用搜索过滤
+            if (globalSearchTerm) {
+                allArticles = allArticles.filter(article => {
+                    const title = article.title.toLowerCase();
+                    const content = article.content.toLowerCase();
+                    const author = article.author.toLowerCase();
+                    const tags = article.tags ? article.tags.join(' ').toLowerCase() : '';
+                    
+                    return title.includes(globalSearchTerm) || 
+                           content.includes(globalSearchTerm) || 
+                           author.includes(globalSearchTerm) ||
+                           tags.includes(globalSearchTerm);
+                });
+            }
+            
+            // 根据当前排序方式排序文章
+            const currentSort = window.currentSort || 'latest';
+            
+            if (currentSort === 'latest') {
+                // 按最新排序（按日期降序）
+                allArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+            } else if (currentSort === 'hottest') {
+                // 按最热排序（按热度降序）
+                allArticles.sort((a, b) => {
+                    const getHeatScore = (article) => {
+                        const views = article.views || 0;
+                        const likes = article.likes || 0;
+                        const comments = article.comments ? article.comments.length : 0;
+                        return views + (likes + comments) * 5;
+                    };
+                    return getHeatScore(b) - getHeatScore(a);
+                });
+            }
+            
+            if (allArticles.length === 0) {
+                const noResultsMessage = globalSearchTerm ? 
+                    `没有找到包含"${globalSearchTerm}"的文章` : 
+                    '还没有任何文章';
+                    
+                blogContainer.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+                        <i class="fas fa-search" style="font-size: 48px; color: #ddd; margin-bottom: 20px;"></i>
+                        <p style="color: #999; font-size: 18px;">${noResultsMessage}</p>
+                        ${!globalSearchTerm ? `
+                            <button class="btn" style="margin-top: 20px;" onclick="window.location.href='createArticle.html'">
+                                <i class="fas fa-plus"></i> 创建第一篇文章
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            // 生成文章卡片
+            allArticles.forEach(article => {
+                const blogCard = createBlogCard(article, users);
+                blogContainer.appendChild(blogCard);
+            });
+        }
+        
+        // 创建Fakebook卡片
+        function createBlogCard(article, users) {
+            const card = document.createElement('div');
+            card.className = 'blog-card';
+            
+            // 格式化日期
+            const date = new Date(article.date);
+            const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            
+            // 生成摘要（取前100个字符）
+            const excerpt = article.content.substring(0, 100) + (article.content.length > 100 ? '...' : '');
+            
+            // 选择图标
+            const icons = ['fa-code', 'fa-laptop-code', 'fa-mobile-alt', 'fa-database', 'fa-server'];
+            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+            
+            // 查找作者信息
+            const author = users.find(user => user.username === article.author);
+            const authorAvatar = author ? author.avatar : null;
+            
+            card.innerHTML = `
+                <div class="blog-img" ${article.coverImage ? `style="background-image: url('${article.coverImage}'); background-size: cover; background-position: center;"` : ''}>
+                    ${!article.coverImage ? `<i class="fas ${randomIcon}"></i>` : ''}
+                </div>
+                <div class="blog-content">
+                    <div class="author-info">
+                        <div class="author-avatar">
+                            ${authorAvatar ? `<img src="${authorAvatar}" alt="${article.author}">` : `<i class="fas fa-user"></i>`}
+                        </div>
+                        <span class="author-name" onclick="viewUserProfile('${article.author}')">${article.author}</span>
+                        <span>·</span>
+                        <span><i class="far fa-calendar"></i> ${formattedDate}</span>
+                    </div>
+                    <h3 class="blog-title">${article.title}</h3>
+                    <p class="blog-excerpt">${excerpt}</p>
+                    ${article.tags && article.tags.length > 0 ? `
+                        <div style="margin-bottom: 15px;">
+                            ${article.tags.map(tag => `<span style="display: inline-block; background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 15px; font-size: 12px; margin-right: 8px;">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="blog-footer">
+                        <a href="#" class="read-more" onclick="viewArticle('${article.id}'); return false;">
+                            阅读全文 <i class="fas fa-arrow-right"></i>
+                        </a>
+                        <div class="blog-actions">
+                            <div class="action-btn">
+                                <i class="far fa-eye"></i>
+                                <span style="margin-left: 8px;">${article.views || 0}</span>
+                            </div>
+                            <div class="action-btn">
+                                <i class="${article.likes > 0 ? 'fas' : 'far'} fa-heart"></i>
+                                <span style="margin-left: 8px;">${article.likes || 0}</span>
+                            </div>
+                            <div class="action-btn">
+                                <i class="far fa-comment"></i>
+                                <span style="margin-left: 8px;">${article.comments ? article.comments.length : 0}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 更新用户统计信息
+        function updateUserStats(username) {
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const currentUser = users.find(user => user.username === username);
+            
+            // 计算用户文章数量
+            const userArticles = articles.filter(article => article.author === username);
+            document.querySelectorAll('.stat-item .count')[0].textContent = userArticles.length;
+            
+            // 显示粉丝数
+            const followersCount = currentUser && currentUser.followers ? currentUser.followers.length : 0;
+            document.querySelectorAll('.stat-item .count')[1].textContent = followersCount;
+        }
+        
+        // 查看文章详情
+        function viewArticle(articleId) {
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            
+            // 找到对应的文章
+            const article = articles.find(a => a.id === articleId);
+            
+            if (article) {
+                // 增加阅读数
+                article.views = (article.views || 0) + 1;
+                
+                // 更新localStorage中的文章数据
+                const updatedArticles = articles.map(a => a.id === articleId ? article : a);
+                localStorage.setItem('articles', JSON.stringify(updatedArticles));
+                
+                // 将文章数据存储到 localStorage
+                localStorage.setItem('currentArticle', JSON.stringify(article));
+                
+                // 跳转到文章详情页
+                window.location.href = 'viewArticle.html';
+            } else {
+                alert('文章不存在');
+            }
+        }
+
+        // 查看用户资料
+        function viewUserProfile(username) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.username === username);
+            
+            if (user) {
+                // 将用户信息存储到 localStorage
+                localStorage.setItem('viewUser', JSON.stringify(user));
+                
+                // 跳转到用户主页
+                window.location.href = 'homepage.html';
+            } else {
+                alert('用户不存在');
+            }
+        }
+    </script>
+</body>
+</html>
