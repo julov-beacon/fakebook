@@ -1225,6 +1225,7 @@
             const likeBtn = document.getElementById('likeBtn');
             const likeCount = document.getElementById('likeCount');
             const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             
             // 更新文章数据
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
@@ -1236,6 +1237,11 @@
                     articles[articleIndex].likes = (articles[articleIndex].likes || 0) + 1;
                     likeBtn.classList.add('liked');
                     likeBtn.querySelector('i').className = 'fas fa-heart';
+                    
+                    // 给文章作者发送点赞通知
+                    if (currentUser.username && currentUser.username !== currentArticle.author) {
+                        addNotification('like_on_post', currentUser.username, currentArticle.author);
+                    }
                 } else {
                     articles[articleIndex].liked = false;
                     articles[articleIndex].likes = Math.max(0, (articles[articleIndex].likes || 0) - 1);
@@ -1334,6 +1340,11 @@
             comments.push(newComment);
             localStorage.setItem('comments', JSON.stringify(comments));
             
+            // 给文章作者发送评论通知
+            if (currentUser.username !== currentArticle.author) {
+                addNotification('comment_on_post', currentUser.username, currentArticle.author);
+            }
+            
             // 清空输入框
             commentInput.value = '';
             
@@ -1414,6 +1425,8 @@
             localStorage.setItem('viewUser', JSON.stringify(currentUser));
             window.location.href = 'homepage.html';
         }
+        
+        
     </script>
 </body>
 </html> 

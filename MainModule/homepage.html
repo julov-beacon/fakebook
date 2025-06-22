@@ -521,6 +521,28 @@
             width: 16px;
             text-align: center;
         }
+        
+        /* 通知角标样式 */
+        .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #ff4757;
+            border-radius: 50%;
+            width: 8px;
+            height: 8px;
+            border: 1px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .notification-badge.hidden {
+            display: none;
+        }
+        
+        /* 通知按钮需要相对定位 */
+        #notificationBtn {
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -549,7 +571,7 @@
                 <button class="btn outline" id="exploreBtn" onclick="window.location.href='exploration.html'"><i class="fas fa-compass"></i> 探索</button>
                 <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
-                <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline"  id="notificationBtn"><i class="fas fa-bell"></i> <span class="notification-badge hidden" id="notificationBadge"></span> 通知</button>
                 <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
@@ -606,6 +628,28 @@
     <script>
         // 全局排序状态
         let globalCurrentSort = 'latest';
+        
+        // 更新通知角标
+        function updateNotificationBadge() {
+            const badge = document.getElementById('notificationBadge');
+            if (!badge) return;
+            
+            // 获取当前用户ID
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const userId = currentUser.username || localStorage.getItem('currentUserId') || 'guest';
+            
+            // 获取通知列表
+            const data = localStorage.getItem('notifications_' + userId);
+            const notifications = data ? JSON.parse(data) : [];
+            
+            const unreadCount = notifications.filter(item => !item.isRead).length;
+            
+            if (unreadCount > 0) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
         
         // 切换排序方式函数
         function toggleSort() {
@@ -746,6 +790,14 @@
                     window.location.href = 'exploration.html';
                 });
             }
+
+            // 为通知按钮添加跳转功能
+            const notificationBtn = document.getElementById('notificationBtn');
+            if (notificationBtn) {
+                notificationBtn.addEventListener('click', function() {
+                    window.location.href = 'notification.html';
+                });
+            }
             
             // 设置默认排序方式
             window.currentSort = 'latest';
@@ -810,6 +862,9 @@
                 // 添加关注
                 currentUser.following.push(viewUser.username);
                 viewUser.followers.push(currentUser.username);
+                
+                // 给被关注用户发送新粉丝通知
+                addNotification('new_follower', currentUser.username, viewUser.username);
             }
             
             // 更新按钮状态

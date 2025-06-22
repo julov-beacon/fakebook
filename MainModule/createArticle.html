@@ -1289,6 +1289,18 @@
                     // 保存回localStorage
                     localStorage.setItem('articles', JSON.stringify(articles));
                     
+                    // 给关注者发送新文章通知
+                    // 获取当前用户的关注者
+                    const users = JSON.parse(localStorage.getItem('users') || '[]');
+                    const currentUserData = users.find(user => user.username === currentUser.username);
+                    
+                    if (currentUserData && currentUserData.followers) {
+                        currentUserData.followers.forEach(follower => {
+                            // 直接调用addNotification函数
+                            addNotification('post_published', currentUser.username, follower);
+                        });
+                    }
+                    
                     // 直接跳转到主页，不显示弹窗
                     window.location.href = 'homepage.html';
                 }, 1500);
