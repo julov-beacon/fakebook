@@ -472,7 +472,7 @@
             <!-- 按钮组 -->
             <div class="btn-group">
                 <button type="submit" class="btn" id="saveBtn">
-                    <i class="fas fa-save"></i> 保存修改
+                    <i class="fas fa-save"></i> 保存
                 </button>
                 <button type="button" class="btn outline" onclick="window.location.href='../MainModule/homepage.html'">
                     <i class="fas fa-times"></i> 取消
@@ -487,12 +487,32 @@
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const currentUsername = localStorage.getItem('currentUser');
             
-            if (!currentUser.username) {
+            if (!currentUsername) {
                 alert('请先登录系统');
                 window.location.href = '../UserModule/login.html';
                 return;
+            }
+            
+            // 从registeredUsers中获取用户信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            let currentUser;
+            
+            // 处理管理员账户特殊情况
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+                
+                if (!currentUser.username) {
+                    alert('用户信息不存在');
+                    window.location.href = '../UserModule/login.html';
+                    return;
+                }
             }
 
             // 设置导航栏用户信息
@@ -617,15 +637,24 @@
                 return;
             }
 
-            // 获取当前用户
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            // 获取当前用户名和信息
+            const currentUsername = localStorage.getItem('currentUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            let currentUser;
+            
+            // 处理管理员账户特殊情况
+            if (currentUsername === 'admin') {
+                alert('管理员账户不能修改信息');
+                return;
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+            }
+            
             const originalUsername = currentUser.username;
             
             // 检查用户名是否已存在（如果修改了）
             if (username !== originalUsername) {
-                // 获取已注册用户（重要修复：使用正确的localStorage键）
-                const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-                
                 // 检查新用户名是否已被使用
                 if (registeredUsers[username.toLowerCase()]) {
                     alert('该用户名已被使用，请选择其他用户名');
@@ -639,12 +668,6 @@
             if (avatarDataUrl) {
                 currentUser.avatar = avatarDataUrl;
             }
-
-            // 保存到 localStorage
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            
-            // 重要：更新registeredUsers中的用户信息（新增）
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             
             // 情况1：如果修改了用户名
             if (username !== originalUsername) {
@@ -661,17 +684,17 @@
             
             // 保存更新后的registeredUsers
             localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+            
+            // 如果用户名变更，则更新localStorage中存储的currentUser
+            if (username.toLowerCase() !== currentUsername) {
+                localStorage.setItem('currentUser', username.toLowerCase());
+            }
 
-            // 重要：更新viewUser，确保homepage.html能显示最新信息
-            const viewUser = JSON.parse(localStorage.getItem('viewUser') || '{}');
+            // 更新viewUser (如果是当前用户)
+            const viewUsername = localStorage.getItem('viewUser');
             // 如果当前viewUser是当前用户，则更新viewUser
-            if (viewUser.username === originalUsername) {
-                viewUser.username = username;
-                viewUser.bio = bio;
-                if (avatarDataUrl) {
-                    viewUser.avatar = avatarDataUrl;
-                }
-                localStorage.setItem('viewUser', JSON.stringify(viewUser));
+            if (viewUsername === currentUsername) {
+                localStorage.setItem('viewUser', username.toLowerCase());
             }
 
             // 如果修改了用户名，更新文章中的作者信息
@@ -685,7 +708,6 @@
                 localStorage.setItem('articles', JSON.stringify(articles));
             }
 
-            alert('个人资料更新成功！');
             window.location.href = '../MainModule/homepage.html';
         });
     </script>

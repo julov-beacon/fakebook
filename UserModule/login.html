@@ -568,14 +568,9 @@
                 if (userInput === "admin" && passwordInput === "admin") {
                     btn.innerHTML = '<i class="fas fa-check"></i> 登录成功!';
                     
-                    // 存储管理员登录状态
-                    const adminUser = {
-                        username: "admin",
-                        isAdmin: true,
-                        loginTime: new Date().toISOString()
-                    };
-                    localStorage.setItem('currentUser', JSON.stringify(adminUser));
-                    localStorage.setItem('viewUser', JSON.stringify(adminUser));
+                    // 存储管理员登录状态 - 只存储用户名字符串
+                    localStorage.setItem('currentUser', "admin");
+                    localStorage.setItem('viewUser', "admin");
                     
                     setTimeout(() => {
                         btn.innerHTML = '登录';
@@ -601,15 +596,10 @@
                 if(foundUser && foundUser.password === passwordInput) {
                     btn.innerHTML = '<i class="fas fa-check"></i> 登录成功!';
 
-                    const currentUser = registeredUsers[foundUser.username.toLowerCase()];
-                    
-                    // 存储当前登录用户信息
-                    const userData = {
-                        ...currentUser,
-                        loginTime: new Date().toISOString()
-                    };
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-                    localStorage.setItem('viewUser', JSON.stringify(userData));
+                    // 只存储用户名字符串，而不是整个对象
+                    const username = foundUser.username.toLowerCase();
+                    localStorage.setItem('currentUser', username);
+                    localStorage.setItem('viewUser', username);
                     
                     setTimeout(() => {
                         // 跳转到homepage.html页面

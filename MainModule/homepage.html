@@ -571,7 +571,7 @@
                 <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline"  id="notificationBtn"><i class="fas fa-bell"></i> <span class="notification-badge hidden" id="notificationBadge"></span> 通知</button>
-                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
@@ -633,15 +633,20 @@
             const badge = document.getElementById('notificationBadge');
             if (!badge) return;
             
-            // 获取当前用户ID
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const userId = currentUser.username || localStorage.getItem('currentUserId') || 'guest';
+            // 获取当前用户名
+            const currentUsername = localStorage.getItem('currentUser');
+            if (!currentUsername) return;
+
+            // 获取用户数据
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const currentUser = registeredUsers[currentUsername];
             
-            // 获取通知列表
-            const data = localStorage.getItem('notifications_' + userId);
-            const notifications = data ? JSON.parse(data) : [];
+            if (!currentUser || !currentUser.notices) {
+                badge.classList.add('hidden');
+                return;
+            }
             
-            const unreadCount = notifications.filter(item => !item.isRead).length;
+            const unreadCount = currentUser.notices.filter(item => !item.isRead).length;
             
             if (unreadCount > 0) {
                 badge.classList.remove('hidden');
@@ -674,13 +679,48 @@
         
         // 从localStorage加载用户数据
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const viewUser = JSON.parse(localStorage.getItem('viewUser') || '{}');
-        
-            if (!currentUser.username) {
+            const currentUsername = localStorage.getItem('currentUser');
+            const viewUsername = localStorage.getItem('viewUser');
+            
+            if (!currentUsername) {
                 alert('请先登录系统');
                 window.location.href = '../UserModule/login.html';
                 return;
+            }
+            
+            // 获取用户完整信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 处理currentUser
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+                if (!currentUser.username) {
+                    alert('当前用户信息不存在');
+                    window.location.href = '../UserModule/login.html';
+                    return;
+                }
+            }
+            
+            // 处理viewUser
+            let viewUser;
+            if (viewUsername === 'admin') {
+                viewUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                viewUser = viewUsername ? registeredUsers[viewUsername] || {} : currentUser;
+                if (!viewUser.username && viewUsername) {
+                    // 如果指定了viewUser但找不到对应信息，默认使用currentUser
+                    viewUser = currentUser;
+                    localStorage.setItem('viewUser', currentUsername);
+                }
             }
             
             // 设置导航栏用户信息（使用currentUser）
@@ -764,6 +804,7 @@
             // 退出登录功能
             document.getElementById('logoutBtn').addEventListener('click', function() {
                 localStorage.removeItem('currentUser');
+                localStorage.removeItem('viewUser');
                 window.location.href = '../UserModule/login.html';
             });
             
@@ -794,6 +835,7 @@
             const notificationBtn = document.getElementById('notificationBtn');
             if (notificationBtn) {
                 notificationBtn.addEventListener('click', function() {
+                    localStorage.setItem('viewUser', currentUsername);
                     window.location.href = 'notification.html';
                 });
             }
@@ -814,7 +856,7 @@
 
             // 主页按钮逻辑
             document.getElementById('homeBtn').addEventListener('click', function() {
-                localStorage.setItem('viewUser', JSON.stringify(currentUser));
+                localStorage.setItem('viewUser', currentUsername);
                 window.location.href = 'homepage.html';
             });
 
@@ -879,30 +921,48 @@
         // 保存用户数据
         function saveUserData(currentUser, viewUser) {
             // 获取所有用户
-            const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             
-            // 更新当前用户数据
-            const updatedUsers = users.map(user => {
-                if (user.username === currentUser.username) {
-                    return {...user, following: currentUser.following};
-                }
-                if (user.username === viewUser.username) {
-                    return {...user, followers: viewUser.followers};
-                }
-                return user;
-            });
+            // 更新用户数据
+            if (currentUser.username !== 'admin') {
+                registeredUsers[currentUser.username.toLowerCase()] = currentUser;
+            }
+            
+            if (viewUser.username !== 'admin') {
+                registeredUsers[viewUser.username.toLowerCase()] = viewUser;
+            }
             
             // 保存回localStorage
-            localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            localStorage.setItem('viewUser', JSON.stringify(viewUser));
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+            
+            // 只保存用户名，不保存整个对象
+            localStorage.setItem('currentUser', currentUser.username.toLowerCase());
+            localStorage.setItem('viewUser', viewUser.username.toLowerCase());
         }
         
         // 加载文章函数
         function loadArticles() {
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
             const blogContainer = document.getElementById('blogContainer');
-            const viewUser = JSON.parse(localStorage.getItem('viewUser') || '{}');
+            
+            // 获取当前显示的用户名
+            const viewUsername = localStorage.getItem('viewUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 获取完整用户信息
+            let viewUser;
+            if (viewUsername === 'admin') {
+                viewUser = {
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                viewUser = registeredUsers[viewUsername] || {};
+                if (!viewUser.username) {
+                    console.error('视图用户信息不存在');
+                    return;
+                }
+            }
             
             // 清空容器
             blogContainer.innerHTML = '';
@@ -1021,8 +1081,8 @@
                 // 更新localStorage中的文章数据
                 const updatedArticles = articles.map(a => a.id === articleId ? article : a);
                 localStorage.setItem('articles', JSON.stringify(updatedArticles));
-                // 将文章数据存储到 localStorage
-                localStorage.setItem('currentArticle', JSON.stringify(article));
+                // 只存储文章ID而不是整个文章对象
+                localStorage.setItem('currentArticle', articleId);
                 // 跳转到文章详情页
                 window.location.href = 'viewArticle.html';
             } else {

@@ -975,7 +975,7 @@
                 <button class="btn outline" onclick="window.location.href='following.html'"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
-                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
                 <button class="btn outline" onclick="window.location.href='../UserModule/editUserInfo.html'"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
@@ -1029,12 +1029,31 @@
     <script>
         // 从localStorage加载用户数据
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        
-            if (!currentUser.username) {
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            if (!currentUsername) {
                 alert('请先登录系统');
                 window.location.href = '../UserModule/login.html';
                 return;
+            }
+            
+            // 获取用户完整信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 处理currentUser
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+                if (!currentUser.username) {
+                    alert('当前用户信息不存在');
+                    window.location.href = '../UserModule/login.html';
+                    return;
+                }
             }
             
             // 设置导航栏用户信息
@@ -1112,6 +1131,7 @@
             const notificationBtn = document.getElementById('notificationBtn');
             if (notificationBtn) {
                 notificationBtn.addEventListener('click', function() {
+                    localStorage.setItem('viewUser', currentUsername);
                     window.location.href = 'notification.html';
                 });
             }
@@ -1127,8 +1147,26 @@
         
         // 加载文章
         function loadArticle() {
-            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const articleId = localStorage.getItem('currentArticle');
+            
+            // 从articles中获取完整的文章信息
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const currentArticle = articles.find(a => a.id === articleId) || {};
+            
+            // 获取当前用户名和用户信息
+            const currentUsername = localStorage.getItem('currentUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 获取完整的用户信息
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+            }
             
             if (!currentArticle.id) {
                 alert('文章不存在');
@@ -1147,7 +1185,6 @@
             let authorRole = '用户';
             
             // 尝试从用户数据中获取发布者信息
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             const authorUser = registeredUsers[currentArticle.author];
             
             if (authorUser && authorUser.avatar) {
@@ -1231,11 +1268,27 @@
         function toggleLike() {
             const likeBtn = document.getElementById('likeBtn');
             const likeCount = document.getElementById('likeCount');
-            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            const articleId = localStorage.getItem('currentArticle');
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const currentArticle = articles.find(a => a.id === articleId) || {};
+            
+            // 获取当前用户名和用户信息
+            const currentUsername = localStorage.getItem('currentUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 获取完整的用户信息
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+            }
             
             // 更新文章数据
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
             const articleIndex = articles.findIndex(a => a.id === currentArticle.id);
             
             if (articleIndex !== -1) {
@@ -1259,14 +1312,15 @@
                 likeCount.textContent = articles[articleIndex].likes;
                 localStorage.setItem('articles', JSON.stringify(articles));
                 
-                // 更新当前文章数据
-                localStorage.setItem('currentArticle', JSON.stringify(articles[articleIndex]));
+                // 我们不需要更新currentArticle，因为它现在是ID引用
             }
         }
         
         // 分享文章
         function shareArticle() {
-            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
+            const articleId = localStorage.getItem('currentArticle');
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const currentArticle = articles.find(a => a.id === articleId) || {};
             if (navigator.share) {
                 navigator.share({
                     title: currentArticle.title,
@@ -1288,8 +1342,24 @@
         
         // 删除文章
         function deleteArticle() {
-            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const articleId = localStorage.getItem('currentArticle');
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const currentArticle = articles.find(a => a.id === articleId) || {};
+            
+            // 获取当前用户名和用户信息
+            const currentUsername = localStorage.getItem('currentUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 获取完整的用户信息
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+            }
             
             // 确认删除
             if (!confirm('确定要删除这篇文章吗？删除后无法恢复。')) {
@@ -1297,7 +1367,6 @@
             }
             
             // 从文章列表中删除（评论会随文章一起删除，因为评论现在存储在文章对象中）
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
             const updatedArticles = articles.filter(article => article.id !== currentArticle.id);
             localStorage.setItem('articles', JSON.stringify(updatedArticles));
             
@@ -1314,8 +1383,25 @@
         function submitComment() {
             const commentInput = document.getElementById('commentInput');
             const comment = commentInput.value.trim();
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
+            
+            const articleId = localStorage.getItem('currentArticle');
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const currentArticle = articles.find(a => a.id === articleId) || {};
+            
+            // 获取当前用户名和用户信息
+            const currentUsername = localStorage.getItem('currentUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 获取完整的用户信息
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+            }
             
             if (!comment) {
                 alert('请输入评论内容');
@@ -1338,7 +1424,6 @@
             };
             
             // 将评论保存到文章对象中
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
             const articleIndex = articles.findIndex(article => article.id === currentArticle.id);
             
             if (articleIndex !== -1) {
@@ -1353,8 +1438,7 @@
                 // 更新localStorage中的文章数据
                 localStorage.setItem('articles', JSON.stringify(articles));
                 
-                // 更新当前文章数据
-                localStorage.setItem('currentArticle', JSON.stringify(articles[articleIndex]));
+                // 我们不需要更新currentArticle，因为它现在是ID引用
             }
             
             // 给文章作者发送评论通知
@@ -1371,8 +1455,10 @@
         
         // 加载评论
         function loadComments(articleId) {
-            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
-            const articleComments = currentArticle.comments || [];
+            // 从articles中获取完整的文章信息
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const article = articles.find(a => a.id === articleId) || {};
+            const articleComments = article.comments || [];
             const commentsList = document.getElementById('commentsList');
             
             if (articleComments.length === 0) {
@@ -1426,10 +1512,9 @@
         function viewAuthorProfile(authorName) {
             // 获取所有注册用户
             const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            const authorUser = registeredUsers[authorName];
-            if (authorUser) {
-                // 设置viewUser为作者信息
-                localStorage.setItem('viewUser', JSON.stringify(authorUser));
+            if (authorName === 'admin' || registeredUsers[authorName]) {
+                // 设置viewUser为作者用户名
+                localStorage.setItem('viewUser', authorName);
                 // 跳转到主页
                 window.location.href = 'homepage.html';
             } else {
@@ -1437,9 +1522,58 @@
             }
         }
         
+        // 添加通知函数
+        function addNotification(type, fromUser, targetUser) {
+            // 获取用户数据
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const user = registeredUsers[targetUser];
+            
+            if (!user) return;
+            
+            // 初始化notices数组（如果不存在）
+            if (!user.notices) {
+                user.notices = [];
+            }
+            
+            // 根据通知类型生成content
+            let content = '';
+            switch(type) {
+                case 'post_published':
+                    content = `你关注的${fromUser}发布了新文章，快去看看吧`;
+                    break;
+                case 'comment_on_post':
+                    content = `你的文章有新的评论`;
+                    break;
+                case 'like_on_post':
+                    content = `你的文章有新的点赞`;
+                    break;
+                case 'new_follower':
+                    content = `有位用户${fromUser}成为了你的新粉丝`;
+                    break;
+                default:
+                    content = '你有一条新通知';
+            }
+            
+            const newNotification = {
+                id: Date.now() + '_' + Math.floor(Math.random()*10000),
+                type: type,
+                fromUser: fromUser,
+                targetUser: targetUser,
+                content: content,
+                time: new Date().toLocaleString(),
+                isRead: false
+            };
+            
+            // 将新通知添加到通知列表的最前面
+            user.notices.unshift(newNotification);
+            
+            // 保存回localStorage
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        }
+
         function goHome() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            localStorage.setItem('viewUser', JSON.stringify(currentUser));
+            const currentUsername = localStorage.getItem('currentUser');
+            localStorage.setItem('viewUser', currentUsername);
             window.location.href = 'homepage.html';
         }
         

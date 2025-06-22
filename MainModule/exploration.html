@@ -633,7 +633,7 @@
                 <button class="btn outline" id="followBtn"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
-                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
@@ -721,12 +721,31 @@
         
         // 从localStorage加载用户数据
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        
-            if (!currentUser.username) {
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            if (!currentUsername) {
                 alert('请先登录系统');
                 window.location.href = '../UserModule/login.html';
                 return;
+            }
+            
+            // 获取用户完整信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 处理currentUser
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+                if (!currentUser.username) {
+                    alert('当前用户信息不存在');
+                    window.location.href = '../UserModule/login.html';
+                    return;
+                }
             }
             
             // 设置导航栏用户信息
@@ -808,6 +827,7 @@
             // 退出登录功能
             document.getElementById('logoutBtn').addEventListener('click', function() {
                 localStorage.removeItem('currentUser');
+                localStorage.removeItem('viewUser');
                 window.location.href = '../UserModule/login.html';
             });
             
@@ -830,6 +850,7 @@
             const notificationBtn = document.getElementById('notificationBtn');
             if (notificationBtn) {
                 notificationBtn.addEventListener('click', function() {
+                    localStorage.setItem('viewUser', currentUsername);
                     window.location.href = 'notification.html';
                 });
             }
@@ -1014,8 +1035,8 @@
                 const updatedArticles = articles.map(a => a.id === articleId ? article : a);
                 localStorage.setItem('articles', JSON.stringify(updatedArticles));
                 
-                // 将文章数据存储到 localStorage
-                localStorage.setItem('currentArticle', JSON.stringify(article));
+                // 只存储文章ID而不是整个文章对象
+                localStorage.setItem('currentArticle', articleId);
                 
                 // 跳转到文章详情页
                 window.location.href = 'viewArticle.html';
@@ -1026,12 +1047,11 @@
 
         // 查看用户资料
         function viewUserProfile(username) {
-            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-            const user = users[username];
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             
-            if (user) {
-                // 将用户信息存储到 localStorage
-                localStorage.setItem('viewUser', JSON.stringify(user));
+            if (username === 'admin' || registeredUsers[username]) {
+                // 只存储用户名而不是整个用户对象
+                localStorage.setItem('viewUser', username);
                 
                 // 跳转到用户主页
                 window.location.href = 'homepage.html';

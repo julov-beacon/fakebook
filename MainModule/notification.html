@@ -435,7 +435,7 @@
                 <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> <span class="notification-badge hidden" id="notificationBadge"></span> 通知</button>
 
 
-                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
@@ -445,9 +445,6 @@
         <main class="content">
             <div class="section-header">
                 <h2 class="section-title">通知中心</h2>
-                <div class="actions">
-                    <button class="btn outline" onclick="testAddNotification()"><i class="fas fa-plus"></i> 测试添加通知</button>
-                </div>
             </div>
             <div class="notification-container" id="notificationContainer">
                 <!-- 通知卡片由JS动态插入 -->
@@ -489,13 +486,48 @@
 
     // 从localStorage加载用户数据
 document.addEventListener('DOMContentLoaded', function() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const viewUser = JSON.parse(localStorage.getItem('viewUser') || '{}');
-
-    if (!currentUser.username) {
+    const currentUsername = localStorage.getItem('currentUser');
+    const viewUsername = localStorage.getItem('viewUser');
+    
+    if (!currentUsername) {
         alert('请先登录系统');
         window.location.href = '../UserModule/login.html';
         return;
+    }
+    
+    // 获取用户完整信息
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    
+    // 处理currentUser
+    let currentUser;
+    if (currentUsername === 'admin') {
+        currentUser = { 
+            username: 'admin',
+            isAdmin: true
+        };
+    } else {
+        currentUser = registeredUsers[currentUsername] || {};
+        if (!currentUser.username) {
+            alert('当前用户信息不存在');
+            window.location.href = '../UserModule/login.html';
+            return;
+        }
+    }
+    
+    // 处理viewUser
+    let viewUser;
+    if (viewUsername === 'admin') {
+        viewUser = { 
+            username: 'admin',
+            isAdmin: true
+        };
+    } else {
+        viewUser = viewUsername ? registeredUsers[viewUsername] || {} : currentUser;
+        if (!viewUser.username && viewUsername) {
+            // 如果指定了viewUser但找不到对应信息，默认使用currentUser
+            viewUser = currentUser;
+            localStorage.setItem('viewUser', currentUsername);
+        }
     }
     
     // 设置导航栏用户信息（使用currentUser）
@@ -576,6 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 退出登录功能
     document.getElementById('logoutBtn').addEventListener('click', function() {
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('viewUser');
         window.location.href = '../UserModule/login.html';
     });
     
@@ -604,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 主页按钮逻辑
     document.getElementById('homeBtn').addEventListener('click', function() {
-        localStorage.setItem('viewUser', JSON.stringify(currentUser));
+        localStorage.setItem('viewUser', currentUsername);
         window.location.href = 'homepage.html';
     });
 
@@ -612,11 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = 'following.html';
     });
     
-    // 通知按钮高亮
-    const notificationBtn = document.getElementById('notificationBtn');
-    if (notificationBtn) {
-        notificationBtn.classList.add('active');
-    }
+    // 不再为通知按钮高亮
     
     // 进入通知页面时自动标记所有通知为已读
     markAllAsRead();
@@ -666,6 +695,9 @@ function toggleFollowStatus(currentUser, viewUser) {
         // 添加关注
         currentUser.following.push(viewUser.username);
         viewUser.followers.push(currentUser.username);
+        
+        // 给被关注用户发送新粉丝通知
+        addNotification('new_follower', currentUser.username, viewUser.username);
     }
     
     // 更新按钮状态
@@ -694,10 +726,24 @@ function saveUserData(currentUser, viewUser) {
         return user;
     });
     
+    // 保存回localStorage - 修复为使用registeredUsers
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    
+    // 更新用户数据
+    if (currentUser.username !== 'admin') {
+        registeredUsers[currentUser.username.toLowerCase()] = currentUser;
+    }
+    
+    if (viewUser.username !== 'admin') {
+        registeredUsers[viewUser.username.toLowerCase()] = viewUser;
+    }
+    
     // 保存回localStorage
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    localStorage.setItem('viewUser', JSON.stringify(viewUser));
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+    
+    // 只保存用户名，不保存整个对象
+    localStorage.setItem('currentUser', currentUser.username.toLowerCase());
+    localStorage.setItem('viewUser', viewUser.username.toLowerCase());
 }
 
 // 通知类型文本映射
@@ -710,9 +756,16 @@ const notificationTypeMap = {
 
 // 统一添加通知的函数
 function addNotification(type, fromUser, targetUser) {
-    // 获取通知列表
-    const data = localStorage.getItem('notifications_' + targetUser);
-    const notifications = data ? JSON.parse(data) : [];
+    // 获取用户数据
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    const user = registeredUsers[targetUser];
+    
+    if (!user) return;
+    
+    // 初始化notices数组（如果不存在）
+    if (!user.notices) {
+        user.notices = [];
+    }
     
     // 根据通知类型生成content
     let content = '';
@@ -742,19 +795,31 @@ function addNotification(type, fromUser, targetUser) {
         time: new Date().toLocaleString(),
         isRead: false
     };
-    notifications.unshift(newNotification);
-    localStorage.setItem('notifications_' + targetUser, JSON.stringify(notifications));
+    
+    // 将新通知添加到通知列表的最前面
+    user.notices.unshift(newNotification);
+    
+    // 保存回localStorage
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
 }
 
 // 渲染通知列表
 function renderNotifications() {
-    // 获取当前用户ID
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser.username || localStorage.getItem('currentUserId') || 'guest';
+    // 获取当前用户名
+    const currentUsername = localStorage.getItem('currentUser');
+    if (!currentUsername) return;
     
-    // 获取通知列表
-    const data = localStorage.getItem('notifications_' + userId);
-    const list = data ? JSON.parse(data) : [];
+    // 获取用户数据和通知列表
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    const currentUser = registeredUsers[currentUsername];
+    
+    // 如果用户不存在或没有notices数组，则初始化
+    if (!currentUser || !currentUser.notices) {
+        document.getElementById('emptyTip').style.display = 'block';
+        return;
+    }
+    
+    const list = currentUser.notices || [];
     
     const container = document.getElementById('notificationContainer');
     const emptyTip = document.getElementById('emptyTip');
@@ -798,16 +863,21 @@ function deleteNotification(notificationId) {
         return;
     }
     
-    // 获取当前用户ID
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser.username || localStorage.getItem('currentUserId') || 'guest';
+    // 获取当前用户名
+    const currentUsername = localStorage.getItem('currentUser');
+    if (!currentUsername) return;
     
-    // 获取通知列表
-    const data = localStorage.getItem('notifications_' + userId);
-    const notifications = data ? JSON.parse(data) : [];
+    // 获取用户数据
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    const currentUser = registeredUsers[currentUsername];
     
-    const updatedNotifications = notifications.filter(item => item.id !== notificationId);
-    localStorage.setItem('notifications_' + userId, JSON.stringify(updatedNotifications));
+    if (!currentUser || !currentUser.notices) return;
+    
+    // 过滤掉要删除的通知
+    currentUser.notices = currentUser.notices.filter(item => item.id !== notificationId);
+    
+    // 保存回localStorage
+    localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
     
     // 重新渲染通知列表
     renderNotifications();
@@ -821,15 +891,18 @@ function deleteNotification(notificationId) {
 
 // 获取未读通知数量
 function getUnreadNotificationCount() {
-    // 获取当前用户ID
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser.username || localStorage.getItem('currentUserId') || 'guest';
+    // 获取当前用户名
+    const currentUsername = localStorage.getItem('currentUser');
+    if (!currentUsername) return 0;
     
-    // 获取通知列表
-    const data = localStorage.getItem('notifications_' + userId);
-    const notifications = data ? JSON.parse(data) : [];
+    // 获取用户数据
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    const currentUser = registeredUsers[currentUsername];
     
-    return notifications.filter(item => !item.isRead).length;
+    if (!currentUser || !currentUser.notices) return 0;
+    
+    // 返回未读通知数量
+    return currentUser.notices.filter(item => !item.isRead).length;
 }
 
 // 更新通知角标
@@ -848,23 +921,28 @@ function updateNotificationBadge() {
 
 // 标记所有通知为已读
 function markAllAsRead() {
-    // 获取当前用户ID
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser.username || localStorage.getItem('currentUserId') || 'guest';
+    // 获取当前用户名
+    const currentUsername = localStorage.getItem('currentUser');
+    if (!currentUsername) return;
     
-    // 获取通知列表
-    const data = localStorage.getItem('notifications_' + userId);
-    const list = data ? JSON.parse(data) : [];
+    // 获取用户数据
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    const currentUser = registeredUsers[currentUsername];
+    
+    if (!currentUser || !currentUser.notices) return;
     
     let changed = false;
-    list.forEach(item => {
+    // 遍历并标记所有通知为已读
+    currentUser.notices.forEach(item => {
         if (!item.isRead) {
             item.isRead = true;
             changed = true;
         }
     });
+    
+    // 如果有变化，保存更新后的数据
     if (changed) {
-        localStorage.setItem('notifications_' + userId, JSON.stringify(list));
+        localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
         renderNotifications();
         updateNotificationBadge();
     }
@@ -872,15 +950,17 @@ function markAllAsRead() {
 
 // 测试添加通知函数
 function testAddNotification() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const currentUsername = localStorage.getItem('currentUser');
+    if (!currentUsername) return;
+    
     const types = ['post_published', 'comment_on_post', 'like_on_post', 'new_follower'];
     const randomType = types[Math.floor(Math.random() * types.length)];
     const testUsers = ['张三', '李四', '王五', '赵六'];
     const randomUser = testUsers[Math.floor(Math.random() * testUsers.length)];
     
-    addNotification(randomType, randomUser, currentUser.username);
+    addNotification(randomType, randomUser, currentUsername);
     renderNotifications();
-    alert(`已添加${randomType}类型的测试通知！`);
+    updateNotificationBadge();
 }
 
 // 方便其他页面调用addNotification

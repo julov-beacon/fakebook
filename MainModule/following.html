@@ -549,7 +549,7 @@
                 <button class="btn outline active"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
-                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
@@ -628,12 +628,31 @@
         
         // 从localStorage加载用户数据
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        
-            if (!currentUser.username) {
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            if (!currentUsername) {
                 alert('请先登录系统');
                 window.location.href = '../UserModule/login.html';
                 return;
+            }
+            
+            // 获取用户完整信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 处理currentUser
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+                if (!currentUser.username) {
+                    alert('当前用户信息不存在');
+                    window.location.href = '../UserModule/login.html';
+                    return;
+                }
             }
             
             // 设置导航栏用户信息
@@ -713,6 +732,7 @@
             // 退出登录功能
             document.getElementById('logoutBtn').addEventListener('click', function() {
                 localStorage.removeItem('currentUser');
+                localStorage.removeItem('viewUser');
                 window.location.href = '../UserModule/login.html';
             });
             
@@ -740,6 +760,7 @@
             const notificationBtn = document.getElementById('notificationBtn');
             if (notificationBtn) {
                 notificationBtn.addEventListener('click', function() {
+                    localStorage.setItem('viewUser', currentUsername);
                     window.location.href = 'notification.html';
                 });
             }
@@ -761,7 +782,21 @@
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
             const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             const blogContainer = document.getElementById('blogContainer');
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            // 获取当前用户名和用户信息
+            const currentUsername = localStorage.getItem('currentUser');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 获取完整的用户信息
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+            }
             
             // 清空容器
             blogContainer.innerHTML = '';
@@ -901,25 +936,24 @@
                 article.views = (article.views || 0) + 1;
                 const updatedArticles = articles.map(a => a.id === articleId ? article : a);
                 localStorage.setItem('articles', JSON.stringify(updatedArticles));
-                localStorage.setItem('currentArticle', JSON.stringify(article));
+                localStorage.setItem('currentArticle', articleId);
                 window.location.href = 'viewArticle.html';
             } else {
                 alert('文章不存在');
             }
         }
         function viewUserProfile(username) {
-            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-            const user = users[username];
-            if (user) {
-                localStorage.setItem('viewUser', JSON.stringify(user));
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            if (username === 'admin' || registeredUsers[username]) {
+                localStorage.setItem('viewUser', username);
                 window.location.href = 'homepage.html';
             } else {
                 alert('用户不存在');
             }
         }
         function goHome() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            localStorage.setItem('viewUser', JSON.stringify(currentUser));
+            const currentUsername = localStorage.getItem('currentUser');
+            localStorage.setItem('viewUser', currentUsername);
             window.location.href = 'homepage.html';
         }
     </script>

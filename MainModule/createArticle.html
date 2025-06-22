@@ -895,7 +895,7 @@
                 <button class="btn outline" id="followBtn"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
-                <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
+                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
                 <button class="btn outline" onclick="window.location.href='../UserModule/editUserInfo.html'"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
@@ -1018,12 +1018,31 @@
     <script>
         // 从localStorage加载用户数据
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            const currentUsername = localStorage.getItem('currentUser');
             
-            if (!currentUser.username) {
+            if (!currentUsername) {
                 alert('请先登录系统');
                 window.location.href = '../UserModule/login.html';
                 return;
+            }
+            
+            // 获取用户完整信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 处理currentUser
+            let currentUser;
+            if (currentUsername === 'admin') {
+                currentUser = { 
+                    username: 'admin',
+                    isAdmin: true
+                };
+            } else {
+                currentUser = registeredUsers[currentUsername] || {};
+                if (!currentUser.username) {
+                    alert('当前用户信息不存在');
+                    window.location.href = '../UserModule/login.html';
+                    return;
+                }
             }
             
             // 设置导航栏用户信息
@@ -1119,6 +1138,7 @@
             // 退出登录功能
             document.getElementById('logoutBtn').addEventListener('click', function() {
                 localStorage.removeItem('currentUser');
+                localStorage.removeItem('viewUser');
                 window.location.href = '../UserModule/login.html';
             });
             
@@ -1287,14 +1307,15 @@
                     localStorage.setItem('articles', JSON.stringify(articles));
                     
                     // 给关注者发送新文章通知
-                    // 获取当前用户的关注者
-                    const users = JSON.parse(localStorage.getItem('users') || '[]');
-                    const currentUserData = users.find(user => user.username === currentUser.username);
-                    
-                    if (currentUserData && currentUserData.followers) {
-                        currentUserData.followers.forEach(follower => {
-                            // 直接调用addNotification函数
-                            addNotification('post_published', currentUser.username, follower);
+                    // 获取当前用户信息和关注者
+                    if (currentUser.followers && Array.isArray(currentUser.followers)) {
+                        currentUser.followers.forEach(follower => {
+                            // 如果addNotification函数存在，则调用它
+                            if (typeof addNotification === 'function') {
+                                addNotification('post_published', currentUser.username, follower);
+                            } else {
+                                console.log('发送新文章通知给', follower);
+                            }
                         });
                     }
                     
@@ -1319,14 +1340,64 @@
             const notificationBtn = document.getElementById('notificationBtn');
             if (notificationBtn) {
                 notificationBtn.addEventListener('click', function() {
+                    localStorage.setItem('viewUser', currentUsername);
                     window.location.href = 'notification.html';
                 });
             }
         });
 
+        // 添加通知函数
+        function addNotification(type, fromUser, targetUser) {
+            // 获取用户数据
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const user = registeredUsers[targetUser];
+            
+            if (!user) return;
+            
+            // 初始化notices数组（如果不存在）
+            if (!user.notices) {
+                user.notices = [];
+            }
+            
+            // 根据通知类型生成content
+            let content = '';
+            switch(type) {
+                case 'post_published':
+                    content = `你关注的${fromUser}发布了新文章，快去看看吧`;
+                    break;
+                case 'comment_on_post':
+                    content = `你的文章有新的评论`;
+                    break;
+                case 'like_on_post':
+                    content = `你的文章有新的点赞`;
+                    break;
+                case 'new_follower':
+                    content = `有位用户${fromUser}成为了你的新粉丝`;
+                    break;
+                default:
+                    content = '你有一条新通知';
+            }
+            
+            const newNotification = {
+                id: Date.now() + '_' + Math.floor(Math.random()*10000),
+                type: type,
+                fromUser: fromUser,
+                targetUser: targetUser,
+                content: content,
+                time: new Date().toLocaleString(),
+                isRead: false
+            };
+            
+            // 将新通知添加到通知列表的最前面
+            user.notices.unshift(newNotification);
+            
+            // 保存回localStorage
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        }
+
         function goHome() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            localStorage.setItem('viewUser', JSON.stringify(currentUser));
+            const currentUsername = localStorage.getItem('currentUser');
+            localStorage.setItem('viewUser', currentUsername);
             window.location.href = 'homepage.html';
         }
     </script>
