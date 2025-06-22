@@ -586,8 +586,8 @@
             }
 
             // 检查用户名是否已存在
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const exists = users.some(user => user.username === username);
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const exists = users[username];
 
             if (exists) {
                 errorMsg.style.display = 'block';

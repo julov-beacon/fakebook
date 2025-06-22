@@ -170,6 +170,9 @@
             padding: 30px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
             height: fit-content;
+            position: sticky;
+            top: 95px;
+            align-self: start;
         }
         
         .user-profile {
@@ -490,10 +493,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-        }
-        
-        .sidebar-left, .sidebar-right {
-            position: static !important;
         }
         
         /* 排序按钮样式 */
@@ -880,7 +879,7 @@
         // 保存用户数据
         function saveUserData(currentUser, viewUser) {
             // 获取所有用户
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             
             // 更新当前用户数据
             const updatedUsers = users.map(user => {
@@ -894,7 +893,7 @@
             });
             
             // 保存回localStorage
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
+            localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             localStorage.setItem('viewUser', JSON.stringify(viewUser));
         }
@@ -969,6 +968,11 @@
             const icons = ['fa-code', 'fa-laptop-code', 'fa-mobile-alt', 'fa-database', 'fa-server'];
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
             
+            // 计算评论数量 - 从 localStorage.comments 中统计
+            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+            const articleComments = comments.filter(c => c.articleId === article.id);
+            const commentCount = articleComments.length;
+            
             card.innerHTML = `
                 <div class="blog-img" ${article.coverImage ? `style="background-image: url('${article.coverImage}'); background-size: cover; background-position: center;"` : ''}>
                     ${!article.coverImage ? `<i class="fas ${randomIcon}"></i>` : ''}
@@ -999,7 +1003,7 @@
                             </div>
                             <div class="action-btn">
                                 <i class="far fa-comment"></i>
-                                <span style="margin-left: 8px;">${article.comments ? article.comments.length : 0}</span>
+                                <span style="margin-left: 8px;">${commentCount}</span>
                             </div>
                         </div>
                     </div>

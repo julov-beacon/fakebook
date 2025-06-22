@@ -147,6 +147,9 @@
             padding: 30px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
             height: fit-content;
+            position: sticky;
+            top: 95px;
+            align-self: start;
         }
         .user-profile {
             text-align: center;
@@ -461,9 +464,6 @@
             align-items: center;
             gap: 8px;
         }
-        .sidebar-left, .sidebar-right {
-            position: static !important;
-        }
         .filters {
             position: relative;
         }
@@ -751,7 +751,7 @@
         // 加载所有关注用户的文章函数
         function loadArticles() {
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             const blogContainer = document.getElementById('blogContainer');
             const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
             
@@ -832,7 +832,7 @@
             const excerpt = article.content.substring(0, 100) + (article.content.length > 100 ? '...' : '');
             const icons = ['fa-code', 'fa-laptop-code', 'fa-mobile-alt', 'fa-database', 'fa-server'];
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-            const author = users.find(user => user.username === article.author);
+            const author = users[article.author];
             const authorAvatar = author ? author.avatar : null;
             card.innerHTML = `
                 <div class="blog-img" ${article.coverImage ? `style="background-image: url('${article.coverImage}'); background-size: cover; background-position: center;"` : ''}>
@@ -879,8 +879,8 @@
         }
         function updateUserStats(username) {
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const currentUser = users.find(user => user.username === username);
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const currentUser = users[username];
             const userArticles = articles.filter(article => article.author === username);
             document.querySelectorAll('.stat-item .count')[0].textContent = userArticles.length;
             const followersCount = currentUser && currentUser.followers ? currentUser.followers.length : 0;
@@ -900,8 +900,8 @@
             }
         }
         function viewUserProfile(username) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user = users.find(u => u.username === username);
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const user = users[username];
             if (user) {
                 localStorage.setItem('viewUser', JSON.stringify(user));
                 window.location.href = 'homepage.html';
