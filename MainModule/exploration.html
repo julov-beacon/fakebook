@@ -170,6 +170,9 @@
             padding: 30px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
             height: fit-content;
+            position: sticky;
+            top: 95px;
+            align-self: start;
         }
         
         .user-profile {
@@ -535,10 +538,6 @@
             gap: 8px;
         }
         
-        .sidebar-left, .sidebar-right {
-            position: static !important;
-        }
-        
         /* 排序按钮样式 */
         .filters {
             position: relative;
@@ -840,7 +839,7 @@
         // 加载所有文章函数
         function loadArticles() {
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
             const blogContainer = document.getElementById('blogContainer');
             
             // 清空容器
@@ -926,7 +925,7 @@
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
             
             // 查找作者信息
-            const author = users.find(user => user.username === article.author);
+            const author = users[article.author];
             const authorAvatar = author ? author.avatar : null;
             
             card.innerHTML = `
@@ -977,8 +976,8 @@
         // 更新用户统计信息
         function updateUserStats(username) {
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const currentUser = users.find(user => user.username === username);
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const currentUser = users[username];
             
             // 计算用户文章数量
             const userArticles = articles.filter(article => article.author === username);
@@ -1016,8 +1015,8 @@
 
         // 查看用户资料
         function viewUserProfile(username) {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user = users.find(u => u.username === username);
+            const users = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+            const user = users[username];
             
             if (user) {
                 // 将用户信息存储到 localStorage
