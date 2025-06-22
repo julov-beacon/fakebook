@@ -974,7 +974,7 @@
                 <button class="btn outline" onclick="window.location.href='exploration.html'"><i class="fas fa-compass"></i> 探索</button>
                 <button class="btn outline" onclick="window.location.href='following.html'"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
-                <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
                 <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
                 <button class="btn outline" onclick="window.location.href='../UserModule/editUserInfo.html'"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
@@ -1107,6 +1107,14 @@
             document.getElementById('createArticleBtn').addEventListener('click', function() {
                 window.location.href = 'createArticle.html';
             });
+            
+            // 为通知按钮添加跳转功能
+            const notificationBtn = document.getElementById('notificationBtn');
+            if (notificationBtn) {
+                notificationBtn.addEventListener('click', function() {
+                    window.location.href = 'notification.html';
+                });
+            }
             
             // 加载文章数据
             loadArticle();

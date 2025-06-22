@@ -548,7 +548,7 @@
                 <button class="btn outline" id="exploreBtn"><i class="fas fa-compass"></i> 探索</button>
                 <button class="btn outline active"><i class="fas fa-heart"></i> 关注</button>
                 <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
-                <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
                 <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
@@ -735,6 +735,14 @@
             document.getElementById('exploreBtn').addEventListener('click', function() {
                 window.location.href = 'exploration.html';
             });
+            
+            // 为通知按钮添加跳转功能
+            const notificationBtn = document.getElementById('notificationBtn');
+            if (notificationBtn) {
+                notificationBtn.addEventListener('click', function() {
+                    window.location.href = 'notification.html';
+                });
+            }
             
             // 修正：为关注按钮添加跳转功能（防止其他页面跳转到本页时路径错误）
             document.querySelectorAll('.btn.outline.active').forEach(btn => {
