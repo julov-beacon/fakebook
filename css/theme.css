@@ -1,0 +1,31 @@
+:root {
+    /* Day Mode Variables */
+    --bg-primary: #fff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: rgba(255,255,255,0.95);
+    --text-primary: #333;
+    --text-secondary: #777;
+    --text-tertiary: #999;
+    --primary-color: #3498db;
+    --secondary-color: #8e44ad;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --gradient-primary: linear-gradient(135deg, #6e8efb, #a777e3);
+    --gradient-secondary: linear-gradient(to right, #3498db, #8e44ad);
+}
+
+[data-theme="night"] {
+    /* Night Mode Variables */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --bg-tertiary: rgba(45, 45, 45, 0.95);
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --text-tertiary: #999999;
+    --primary-color: #4fc3f7;
+    --secondary-color: #ab47bc;
+    --border-color: #404040;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --gradient-primary: linear-gradient(135deg, #2c3e50, #34495e);
+    --gradient-secondary: linear-gradient(to right, #4fc3f7, #ab47bc);
+} 

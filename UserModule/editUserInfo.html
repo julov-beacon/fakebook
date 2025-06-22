@@ -4,8 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>编辑个人资料</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/theme.css">
     <style>
+        :root {
+            /* Day Mode Variables */
+            --bg-primary: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: rgba(255,255,255,0.95);
+            --text-primary: #333;
+            --text-secondary: #777;
+            --text-tertiary: #999;
+            --primary-color: #3498db;
+            --secondary-color: #8e44ad;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, #6e8efb, #a777e3);
+            --gradient-secondary: linear-gradient(45deg, #3498db, #8e44ad);
+            --input-bg: #f1f3f6;
+            --error-color: #e74c3c;
+        }
+        
+        [data-theme="night"] {
+            /* Night Mode Variables */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: rgba(45, 45, 45, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-tertiary: #999999;
+            --primary-color: #4fc3f7;
+            --secondary-color: #ab47bc;
+            --border-color: #404040;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --gradient-primary: linear-gradient(135deg, #2c3e50, #34495e);
+            --gradient-secondary: linear-gradient(45deg, #4fc3f7, #ab47bc);
+            --input-bg: #2d2d2d;
+            --error-color: #ff6b6b;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -15,20 +60,22 @@
         
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            background: var(--gradient-primary);
             padding: 0 0 20px 0;
             overflow-x: hidden;
+            transition: all 0.3s ease;
         }
         
         .navbar {
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--bg-tertiary);
             border-radius: 12px;
             padding: 15px 30px;
             margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 8px 20px var(--shadow-color);
+            transition: all 0.3s ease;
         }
         
         .logo {
@@ -38,7 +85,7 @@
         }
         
         .logo h1 {
-            color: #3498db;
+            color: var(--primary-color);
             font-size: 24px;
             font-weight: 900;
             text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
@@ -46,7 +93,7 @@
         
         .logo i {
             font-size: 28px;
-            color: #8e44ad;
+            color: var(--secondary-color);
         }
         
         .nav-links {
@@ -56,7 +103,7 @@
         
         .nav-links a {
             text-decoration: none;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 500;
             padding: 8px 15px;
             border-radius: 20px;
@@ -66,7 +113,7 @@
         
         .nav-links a:hover {
             background: rgba(52, 152, 219, 0.1);
-            color: #3498db;
+            color: var(--primary-color);
         }
         
         /* 用户信息区域样式 */
@@ -80,7 +127,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
+            background: var(--gradient-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -88,7 +135,7 @@
             font-size: 18px;
             overflow: hidden;
             border: 2px solid #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px var(--shadow-color);
         }
         
         .nav-avatar img {
@@ -106,15 +153,39 @@
         
         .nav-username {
             font-weight: 600;
-            color: #333;
+            color: var(--text-primary);
             font-size: 14px;
             line-height: 1.2;
         }
         
         .nav-user-id {
             font-size: 12px;
-            color: #777;
+            color: var(--text-secondary);
             line-height: 1.2;
+        }
+        
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+        }
+        
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .theme-toggle i {
+            font-size: 18px;
         }
         
         /* 响应式设计 */
@@ -137,10 +208,11 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--bg-tertiary);
             border-radius: 16px;
             padding: 40px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 30px var(--shadow-color);
+            transition: all 0.3s ease;
         }
         
         .page-header {
@@ -150,7 +222,7 @@
         
         .page-title {
             font-size: 32px;
-            color: #333;
+            color: var(--text-primary);
             font-weight: 600;
             margin-bottom: 10px;
             position: relative;
@@ -165,12 +237,12 @@
             transform: translateX(-50%);
             width: 80px;
             height: 4px;
-            background: linear-gradient(to right, #3498db, #8e44ad);
+            background: var(--gradient-secondary);
             border-radius: 2px;
         }
         
         .page-subtitle {
-            color: #777;
+            color: var(--text-secondary);
             font-size: 16px;
             margin-top: 20px;
         }
@@ -188,7 +260,7 @@
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
+            background: var(--gradient-secondary);
             margin: 0 auto 20px;
             display: flex;
             align-items: center;
@@ -400,10 +472,13 @@
     <!-- 顶部导航 -->
     <nav class="navbar">
         <div class="logo">
-            <i class="fas fa-blog"></i>
-            <h1>Fakebook</h1>
+            <i class="fas fa-user-edit"></i>
+            <h1>编辑资料</h1>
         </div>
         <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
             <div class="nav-avatar">
                 <i class="fas fa-user"></i>
             </div>
@@ -481,6 +556,7 @@
         </form>
     </div>
 
+    <script src="../js/theme.js"></script>
     <script>
         let originalUsername = '';
         let avatarDataUrl = '';
@@ -688,6 +764,43 @@
             alert('个人资料更新成功！');
             window.location.href = '../MainModule/homepage.html';
         });
+        
+        // 主题切换功能
+        function initializeTheme() {
+            const savedTheme = document.documentElement.getAttribute('data-theme') || 'day';
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            if (savedTheme === 'night') {
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'day';
+            const newTheme = currentTheme === 'day' ? 'night' : 'day';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            if (newTheme === 'night') {
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
+        
+        // 初始化主题
+        initializeTheme();
+        
+        // 添加主题切换事件监听器
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     </script>
 </body>
 </html>

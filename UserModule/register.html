@@ -4,8 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户注册</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/theme.css">
     <style>
+        :root {
+            /* Day Mode Variables */
+            --bg-primary: #fff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: rgba(255,255,255,0.95);
+            --text-primary: #333;
+            --text-secondary: #777;
+            --text-tertiary: #999;
+            --primary-color: #3498db;
+            --secondary-color: #8e44ad;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, #667eea, #764ba2);
+            --gradient-secondary: linear-gradient(45deg, #667eea, #764ba2);
+            --input-bg: #f1f3f6;
+            --error-color: #e74c3c;
+        }
+        
+        [data-theme="night"] {
+            /* Night Mode Variables */
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: rgba(45, 45, 45, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-tertiary: #999999;
+            --primary-color: #4fc3f7;
+            --secondary-color: #ab47bc;
+            --border-color: #404040;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --gradient-primary: linear-gradient(135deg, #2c3e50, #34495e);
+            --gradient-secondary: linear-gradient(45deg, #4fc3f7, #ab47bc);
+            --input-bg: #2d2d2d;
+            --error-color: #ff6b6b;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -18,10 +63,11 @@
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--gradient-primary);
             padding: 20px;
             overflow-y: auto;
             overflow-x: hidden;
+            transition: all 0.3s ease;
         }
         
         .container {
@@ -29,17 +75,18 @@
             width: 950px;
             max-width: 100%;
             min-height: 600px;
-            background: rgba(255, 255, 255, 0.95);
+            background: var(--bg-tertiary);
             border-radius: 16px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 30px var(--shadow-color);
             overflow: hidden;
             position: relative;
             margin: 20px 0;
+            transition: all 0.3s ease;
         }
         
         .visual-section {
             flex: 1;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: var(--gradient-secondary);
             position: relative;
             display: flex;
             flex-direction: column;
@@ -82,7 +129,7 @@
         }
         
         .logo h1 {
-            color: #3498db;
+            color: var(--primary-color);
             font-size: 24px;
             font-weight: 900;
             text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
@@ -108,12 +155,41 @@
             transition: all 0.3s ease;
             overflow-y: auto;
             min-height: 600px;
+            position: relative;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-primary);
+            z-index: 10;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .theme-toggle i {
+            font-size: 18px;
         }
         
         .register-section h2 {
             text-align: center;
             margin-bottom: 25px;
-            color: #333;
+            color: var(--text-primary);
             font-size: 28px;
             position: relative;
         }
@@ -126,7 +202,7 @@
             transform: translateX(-50%);
             width: 60px;
             height: 4px;
-            background: linear-gradient(to right, #667eea, #764ba2);
+            background: var(--gradient-secondary);
             border-radius: 2px;
         }
         
@@ -140,8 +216,9 @@
             padding: 15px 20px 15px 45px;
             border: none;
             border-radius: 30px;
-            background: #f1f3f6;
+            background: var(--input-bg);
             font-size: 16px;
+            color: var(--text-primary);
             box-shadow: inset 5px 5px 10px rgba(166, 166, 166, 0.1),
                         inset -5px -5px 10px rgba(255, 255, 255, 0.7);
             transition: all 0.3s ease;
@@ -161,7 +238,7 @@
             left: 18px;
             top: 50%;
             transform: translateY(-50%);
-            color: #6d6d6d;
+            color: var(--text-secondary);
             font-size: 18px;
             transition: color 0.3s;
             pointer-events: none;
@@ -169,7 +246,7 @@
         }
         
         .input-group input:focus + i {
-            color: #667eea;
+            color: var(--primary-color);
         }
         
         .checkbox-group {
@@ -177,7 +254,7 @@
             align-items: flex-start;
             margin-bottom: 25px;
             font-size: 14px;
-            color: #555;
+            color: var(--text-secondary);
             gap: 10px;
             position: relative;
             z-index: 10;
@@ -188,7 +265,7 @@
             height: 18px;
             margin: 0;
             cursor: pointer;
-            accent-color: #667eea;
+            accent-color: var(--primary-color);
             flex-shrink: 0;
             margin-top: 2px;
             position: relative;
@@ -203,18 +280,18 @@
         }
         
         .checkbox-group a {
-            color: #667eea;
+            color: var(--primary-color);
             text-decoration: none;
             transition: color 0.3s;
         }
         
         .checkbox-group a:hover {
-            color: #764ba2;
+            color: var(--secondary-color);
             text-decoration: underline;
         }
         
         .register-btn {
-            background: linear-gradient(to right, #667eea, #764ba2);
+            background: var(--gradient-primary);
             color: white;
             border: none;
             padding: 15px;
@@ -271,7 +348,7 @@
             text-align: center;
             margin: 20px 0;
             position: relative;
-            color: #999;
+            color: var(--text-tertiary);
         }
         
         .divider::before {
@@ -281,7 +358,7 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(to right, transparent, #ddd, transparent);
+            background: linear-gradient(to right, transparent, var(--border-color), transparent);
             z-index: 1;
         }
         
@@ -306,7 +383,7 @@
             width: 45px;
             height: 45px;
             border-radius: 50%;
-            background: #f1f3f6;
+            background: var(--bg-secondary);
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             border: none;
@@ -328,7 +405,7 @@
         
         .social-btn i {
             font-size: 20px;
-            color: #555;
+            color: var(--text-primary);
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             pointer-events: none;
         }
@@ -358,18 +435,18 @@
             margin-top: 20px;
             margin-bottom: 20px;
             font-size: 14px;
-            color: #555;
+            color: var(--text-tertiary);
         }
         
         .login-link a {
-            color: #667eea;
+            color: var(--primary-color);
             text-decoration: none;
             transition: color 0.3s;
             cursor: pointer;
         }
         
         .login-link a:hover {
-            color: #764ba2;
+            color: var(--secondary-color);
             text-decoration: underline;
         }
         
@@ -412,7 +489,7 @@
         }
         
         .error-message {
-            color: #e74c3c;
+            color: var(--error-color);
             font-size: 13px;
             margin-top: 5px;
             padding-left: 10px;
@@ -421,7 +498,7 @@
         }
         
         .input-group.error i {
-            color: #e74c3c;
+            color: var(--error-color);
         }
         
         .input-group.error input {
@@ -470,7 +547,7 @@
             align-items: center;
         }
         
-        .strength-weak { color: #e74c3c; }
+        .strength-weak { color: var(--error-color); }
         .strength-medium { color: #f39c12; }
         .strength-strong { color: #27ae60; }
         
@@ -487,7 +564,7 @@
         
         .student-id-tip {
             font-size: 12px;
-            color: #666;
+            color: var(--text-secondary);
             padding-left: 45px;
             margin-top: -10px;
             margin-bottom: 10px;
@@ -509,6 +586,9 @@
         </div>
         
         <div class="register-section">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-moon"></i>
+            </button>
             <h2>用户注册</h2>
             
             <div class="success-message" id="successMessage">
@@ -577,6 +657,7 @@
         </div>
     </div>
 
+    <script src="../js/theme.js"></script>
     <script>
         // 水波动画效果
         document.querySelector('.register-btn').addEventListener('mousedown', function(e) {
@@ -831,6 +912,43 @@
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('studentId').focus();
         });
+        
+        // 主题切换功能
+        function initializeTheme() {
+            const savedTheme = document.documentElement.getAttribute('data-theme') || 'day';
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            if (savedTheme === 'night') {
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
+        
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'day';
+            const newTheme = currentTheme === 'day' ? 'night' : 'day';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            if (newTheme === 'night') {
+                themeIcon.className = 'fas fa-sun';
+            } else {
+                themeIcon.className = 'fas fa-moon';
+            }
+        }
+        
+        // 初始化主题
+        initializeTheme();
+        
+        // 添加主题切换事件监听器
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
     </script>
 </body>
 </html>

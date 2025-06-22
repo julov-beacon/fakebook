@@ -105,6 +105,8 @@
             padding: 30px;
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
             height: fit-content;
+            position: sticky;
+            top: 95px;
         }
         
         .user-profile {
@@ -879,10 +881,6 @@
             gap: 8px;
         }
         
-        .sidebar-left, .sidebar-right {
-            position: static !important;
-        }
-        
         /* 用户信息区域样式 */
         .user-info {
             display: flex;
@@ -974,7 +972,7 @@
                 <button class="btn outline" id="homeBtn" onclick="goHome()"><i class="fas fa-home"></i> 主页</button>
                 <button class="btn outline" onclick="window.location.href='exploration.html'"><i class="fas fa-compass"></i> 探索</button>
                 <button class="btn outline" onclick="window.location.href='following.html'"><i class="fas fa-heart"></i> 关注</button>
-                <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline" onclick="window.location.href='directMessage.html'"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
                 <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
                 <button class="btn outline" onclick="window.location.href='../UserModule/editUserInfo.html'"><i class="fas fa-edit"></i> 编辑资料</button>

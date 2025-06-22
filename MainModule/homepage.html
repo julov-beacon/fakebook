@@ -3,539 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户Fakebook主页</title>
+    <title>Fakebook - 主页</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-        }
-        
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
-            padding: 0 0 20px 0;
-            overflow-x: hidden;
-        }
-        
-        .navbar {
-            position: sticky;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            background: #fff;
-            border-radius: 0;
-            padding: 15px 30px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .logo h1 {
-            color: #3498db;
-            font-size: 24px;
-            font-weight: 900;
-            text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
-        }
-        
-        .logo i {
-            font-size: 28px;
-            color: #8e44ad;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            padding: 8px 15px;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .nav-links a:hover {
-            background: rgba(52, 152, 219, 0.1);
-            color: #3498db;
-        }
-        
-        .nav-links a.active {
-            background: linear-gradient(to right, #3498db, #8e44ad);
-            color: white;
-        }
-        
-        .nav-links a.active::before {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 30px;
-            height: 3px;
-            background: linear-gradient(to right, #3498db, #8e44ad);
-            border-radius: 2px;
-        }
-        
-        /* 用户信息区域样式 */
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .nav-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 18px;
-            overflow: hidden;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .nav-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-        
-        .nav-user-details {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-        
-        .nav-username {
-            font-weight: 600;
-            color: #333;
-            font-size: 14px;
-            line-height: 1.2;
-        }
-        
-        .nav-user-id {
-            font-size: 12px;
-            color: #777;
-            line-height: 1.2;
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .nav-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 16px;
-            }
-            
-            .nav-username {
-                font-size: 13px;
-            }
-            
-            .nav-user-id {
-                font-size: 11px;
-            }
-        }
-        
-        .main-container {
-            display: grid;
-            grid-template-columns: 1.2fr 2.3fr 1.2fr; /* 三栏 */
-            gap: 25px;
-            max-width: 1300px;
-            margin: 0 auto;
-        }
-        
-        .sidebar {
-            background: rgba(255,255,255,0.95);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-            height: fit-content;
-            position: sticky;
-            top: 95px;
-            align-self: start;
-        }
-        
-        .user-profile {
-            text-align: center;
-            padding: 20px 0;
-        }
-        
-        .avatar {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 50px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .avatar i {
-            z-index: 2;
-        }
-        
-        .avatar::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-            z-index: 1;
-            animation: rotate 15s linear infinite;
-        }
-        
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-        
-        .user-profile h2 {
-            font-size: 24px;
-            margin-bottom: 5px;
-            color: #333;
-        }
-        
-        .user-id {
-            color: #777;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .user-bio {
-            color: #555;
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 15px 0;
-            padding: 0 10px;
-        }
-        
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            margin: 25px 0;
-        }
-        
-        .stat-item {
-            text-align: center;
-        }
-        
-        .stat-item .count {
-            font-size: 28px;
-            font-weight: 600;
-            color: #3498db;
-            margin-bottom: 5px;
-        }
-        
-        .stat-item .label {
-            font-size: 14px;
-            color: #777;
-        }
-        
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .btn, .create-blog-btn {
-            background: linear-gradient(to right, #3498db, #8e44ad);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        .btn.outline {
-            background: transparent;
-            border: 2px solid #3498db;
-            color: #3498db;
-            box-shadow: none;
-        }
-        
-        .btn:hover, .create-blog-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
-            background: linear-gradient(to right, #6e8efb, #a777e3);
-        }
-        
-        .content {
-            background: rgba(255,255,255,0.95);
-            border-radius: 16px;
-            padding: 35px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            font-size: 24px;
-            color: #333;
-            font-weight: 600;
-            position: relative;
-        }
-        
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 0;
-            width: 50px;
-            height: 4px;
-            background: linear-gradient(to right, #3498db, #8e44ad);
-            border-radius: 2px;
-        }
-        
-        .blog-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-        }
-        
-        .blog-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .blog-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-        }
-        
-        .blog-img {
-            height: 180px;
-            background: linear-gradient(45deg, #3498db, #8e44ad);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 60px;
-        }
-        
-        .blog-img i {
-            opacity: 0.8;
-        }
-        
-        .blog-content {
-            padding: 25px;
-        }
-        
-        .blog-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            color: #777;
-            font-size: 14px;
-        }
-        
-        .blog-title {
-            font-size: 20px;
-            margin-bottom: 15px;
-            color: #333;
-            font-weight: 600;
-        }
-        
-        .blog-excerpt {
-            color: #555;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-        
-        .blog-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .read-more {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .blog-actions {
-            display: flex;
-            gap: 15px;
-        }
-        
-        /* 修改：移除背景和圆形效果 */
-        .action-btn {
-            color: #3498db;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px; /* 增加字体大小使其更易读 */
-            margin: 0 8px; /* 添加间距 */
-        }
-        
-        .create-blog-btn {
-            background: linear-gradient(to right, #3498db, #8e44ad);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-            cursor: pointer;
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.4);
-            transition: all 0.3s ease;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .create-blog-btn:hover {
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 15px 35px rgba(52, 152, 219, 0.5);
-        }
-        
-        .sidebar-right {
-            background: rgba(255, 255, 255, 0.85);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-            height: fit-content;
-        }
-        
-        @media (max-width: 1024px) {
-            .main-container {
-                grid-template-columns: 1fr;
-            }
-            .sidebar-right {
-                display: none;
-            }
-            .sidebar {
-                grid-template-columns: 1fr 1fr;
-                gap: 20px;
-                align-items: center;
-            }
-            .user-profile {
-                padding: 0;
-            }
-            .btn-group {
-                margin-top: 0;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                grid-template-columns: 1fr;
-            }
-            
-            .navbar {
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .blog-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats {
-                gap: 30px;
-            }
-        }
-        
-        .sidebar-btns .btn {
-            justify-content: center;
-            text-align: center !important;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        /* 排序按钮样式 */
-        .filters {
-            position: relative;
-        }
-        
-        /* 排序按钮固定尺寸 */
-        #sortBtn {
-            min-width: 100px;
-            width: 100px;
-            padding: 12px 20px;
-            white-space: nowrap;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-            line-height: 1;
-        }
-        
-        #sortBtn i {
-            font-size: 16px;
-            width: 16px;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/theme.css">
 </head>
 <body>
-    <!-- 顶部导航 -->
     <nav class="navbar">
         <div class="logo">
             <i class="fas fa-blog"></i>
             <h1>Fakebook</h1>
         </div>
         <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
             <div class="nav-avatar">
-                <img src="https://via.placeholder.com/40" alt="User Avatar">
+                <i class="fas fa-user"></i>
             </div>
             <div class="nav-user-details">
-                <span class="nav-username">John Doe</span>
-                <span class="nav-user-id">@johndoe</span>
+                <span class="nav-username">用户名</span>
+                <span class="nav-user-id">@username</span>
             </div>
         </div>
     </nav>
@@ -547,7 +42,7 @@
                 <button class="btn outline" id="homeBtn"><i class="fas fa-home"></i> 主页</button>
                 <button class="btn outline" id="exploreBtn" onclick="window.location.href='exploration.html'"><i class="fas fa-compass"></i> 探索</button>
                 <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
-                <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline" onclick="window.location.href='directMessage.html'"><i class="fas fa-envelope"></i> 私信</button>
                 <button class="btn outline"><i class="fas fa-bell"></i> 通知</button>
                 <button class="btn outline"><i class="fas fa-cog"></i> 设置</button>
                 <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
@@ -574,18 +69,18 @@
                 <div class="avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <h2 style="font-size: 22px; margin-bottom: 5px; color: #333;"></h2>
-                <p class="user-id" style="font-size: 15px; color: #777; margin-bottom: 10px;"></p>
+                <h2 style="font-size: 22px; margin-bottom: 5px; color: var(--text-primary);"></h2>
+                <p class="user-id" style="font-size: 15px; color: var(--text-secondary); margin-bottom: 10px;"></p>
                 <p class="user-bio"></p>
             </div>
             <div class="stats">
                 <div class="stat-item">
-                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">28</div>
-                    <div class="label" style="font-size: 13px; color: #777;">文章</div>
+                    <div class="count" style="font-size: 22px; font-weight: 600; color: var(--primary-color); margin-bottom: 5px;">28</div>
+                    <div class="label" style="font-size: 13px; color: var(--text-secondary);">文章</div>
                 </div>
                 <div class="stat-item">
-                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">1.2K</div>
-                    <div class="label" style="font-size: 13px; color: #777;">粉丝</div>
+                    <div class="count" style="font-size: 22px; font-weight: 600; color: var(--primary-color); margin-bottom: 5px;">1.2K</div>
+                    <div class="label" style="font-size: 13px; color: var(--text-secondary);">粉丝</div>
                 </div>
             </div>
             <!-- 添加关注按钮 -->
@@ -602,6 +97,7 @@
         <i class="fas fa-plus"></i>
     </button>
 
+    <script src="../js/theme.js"></script>
     <script>
         // 全局排序状态
         let globalCurrentSort = 'latest';
@@ -638,6 +134,13 @@
                 window.location.href = '../UserModule/login.html';
                 return;
             }
+            
+            // 初始化主题
+            initializeTheme();
+            
+            // 设置主题切换功能
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.addEventListener('click', toggleTheme);
             
             // 设置导航栏用户信息（使用currentUser）
             const navUsername = document.querySelector('.nav-username');
@@ -771,6 +274,31 @@
             });
         });
         
+        // 初始化主题
+        function initializeTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'day';
+            updateThemeIcon(currentTheme);
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'day';
+            const newTheme = currentTheme === 'day' ? 'night' : 'day';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+        
+        // 更新主题图标
+        function updateThemeIcon(theme) {
+            const themeToggle = document.querySelector('.theme-toggle i');
+            if (theme === 'night') {
+                themeToggle.className = 'fas fa-sun';
+            } else {
+                themeToggle.className = 'fas fa-moon';
+            }
+        }
+        
         // 检查是否已关注
         function checkIfFollowing(currentUser, viewUser) {
             // 初始化关注列表（如果不存在）
@@ -827,18 +355,15 @@
             const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             
             // 更新当前用户数据
-            const updatedUsers = users.map(user => {
-                if (user.username === currentUser.username) {
-                    return {...user, following: currentUser.following};
-                }
-                if (user.username === viewUser.username) {
-                    return {...user, followers: viewUser.followers};
-                }
-                return user;
-            });
+            if (users[currentUser.username]) {
+                users[currentUser.username] = {...users[currentUser.username], following: currentUser.following};
+            }
+            if (users[viewUser.username]) {
+                users[viewUser.username] = {...users[viewUser.username], followers: viewUser.followers};
+            }
             
             // 保存回localStorage
-            localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
+            localStorage.setItem('registeredUsers', JSON.stringify(users));
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
             localStorage.setItem('viewUser', JSON.stringify(viewUser));
         }
