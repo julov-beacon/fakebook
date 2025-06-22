@@ -1296,15 +1296,10 @@
                 return;
             }
             
-            // 从文章列表中删除
+            // 从文章列表中删除（评论会随文章一起删除，因为评论现在存储在文章对象中）
             const articles = JSON.parse(localStorage.getItem('articles') || '[]');
             const updatedArticles = articles.filter(article => article.id !== currentArticle.id);
             localStorage.setItem('articles', JSON.stringify(updatedArticles));
-            
-            // 删除相关评论
-            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
-            const updatedComments = comments.filter(comment => comment.articleId !== currentArticle.id);
-            localStorage.setItem('comments', JSON.stringify(updatedComments));
             
             // 清除当前文章数据
             localStorage.removeItem('currentArticle');
@@ -1342,10 +1337,25 @@
                 articleId: currentArticle.id
             };
             
-            // 保存评论
-            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
-            comments.push(newComment);
-            localStorage.setItem('comments', JSON.stringify(comments));
+            // 将评论保存到文章对象中
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const articleIndex = articles.findIndex(article => article.id === currentArticle.id);
+            
+            if (articleIndex !== -1) {
+                // 确保comments数组存在
+                if (!articles[articleIndex].comments) {
+                    articles[articleIndex].comments = [];
+                }
+                
+                // 添加新评论到文章对象
+                articles[articleIndex].comments.push(newComment);
+                
+                // 更新localStorage中的文章数据
+                localStorage.setItem('articles', JSON.stringify(articles));
+                
+                // 更新当前文章数据
+                localStorage.setItem('currentArticle', JSON.stringify(articles[articleIndex]));
+            }
             
             // 给文章作者发送评论通知
             if (currentUser.username !== currentArticle.author) {
@@ -1361,8 +1371,8 @@
         
         // 加载评论
         function loadComments(articleId) {
-            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
-            const articleComments = comments.filter(c => c.articleId === articleId);
+            const currentArticle = JSON.parse(localStorage.getItem('currentArticle') || '{}');
+            const articleComments = currentArticle.comments || [];
             const commentsList = document.getElementById('commentsList');
             
             if (articleComments.length === 0) {
@@ -1432,7 +1442,6 @@
             localStorage.setItem('viewUser', JSON.stringify(currentUser));
             window.location.href = 'homepage.html';
         }
-        
         
     </script>
 </body>

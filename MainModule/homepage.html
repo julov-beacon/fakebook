@@ -968,10 +968,8 @@
             const icons = ['fa-code', 'fa-laptop-code', 'fa-mobile-alt', 'fa-database', 'fa-server'];
             const randomIcon = icons[Math.floor(Math.random() * icons.length)];
             
-            // 计算评论数量 - 从 localStorage.comments 中统计
-            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
-            const articleComments = comments.filter(c => c.articleId === article.id);
-            const commentCount = articleComments.length;
+            // 计算评论数量 - 从文章对象的comments数组中统计
+            const commentCount = article.comments ? article.comments.length : 0;
             
             card.innerHTML = `
                 <div class="blog-img" ${article.coverImage ? `style="background-image: url('${article.coverImage}'); background-size: cover; background-position: center;"` : ''}>

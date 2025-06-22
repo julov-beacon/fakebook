@@ -756,12 +756,14 @@
                 
                 let processedComments = 0;
                 const totalExpectedComments = articles.length * 3; // 每篇文章3条评论
-                
-                // 获取现有的评论数据
-                let existingComments = JSON.parse(localStorage.getItem('comments') || '[]');
 
                 articles.forEach((article, articleIdx) => {
                     const commentCount = Math.min(3, commentsData.length - processedComments); // 最多3条评论
+                    
+                    // 确保文章对象有comments数组
+                    if (!article.comments) {
+                        article.comments = [];
+                    }
                     
                     for (let i = 0; i < commentCount; i++) {
                         const commentIndex = processedComments + i;
@@ -778,17 +780,17 @@
                                 articleId: article.id
                             };
                             
-                            // 保存到 localStorage.comments 而不是 article.comments
-                            existingComments.push(mockComment);
+                            // 将评论直接添加到文章对象的comments数组中
+                            article.comments.push(mockComment);
                         }
                         processedComments++;
                         progressFill.style.width = `${Math.round((processedComments/totalExpectedComments)*100)}%`;
                     }
                 });
 
-                // 保存所有评论到 localStorage
-                localStorage.setItem('comments', JSON.stringify(existingComments));
-                loadingText.textContent = '模拟评论已从 API 获取并保存！';
+                // 保存更新后的文章数据（包含评论）
+                localStorage.setItem('articles', JSON.stringify(articles));
+                loadingText.textContent = '模拟评论已从 API 获取并保存到文章对象中！';
                 
                 setTimeout(() => {
                     progressBar.style.display = 'none';

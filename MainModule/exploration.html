@@ -935,6 +935,9 @@
             // 查找作者信息
             const author = users[article.author];
             const authorAvatar = author ? author.avatar : null;
+
+            // 计算评论数量 - 从文章对象的comments数组中统计
+            const commentCount = article.comments ? article.comments.length : 0;
             
             card.innerHTML = `
                 <div class="blog-img" ${article.coverImage ? `style="background-image: url('${article.coverImage}'); background-size: cover; background-position: center;"` : ''}>
@@ -971,7 +974,7 @@
                             </div>
                             <div class="action-btn">
                                 <i class="far fa-comment"></i>
-                                <span style="margin-left: 8px;">${article.comments ? article.comments.length : 0}</span>
+                                <span style="margin-left: 8px;">${commentCount}</span>
                             </div>
                         </div>
                     </div>
