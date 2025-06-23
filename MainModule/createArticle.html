@@ -4,8 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>发布新文章</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="fakebook-style.css">
+    <link rel="stylesheet" href="../Style/day-style.css">
+    <link rel="stylesheet" href="../Style/moon-style.css">
+    <script src="../Scripts/loadUserInfo.js"></script>
+    <script src="../Scripts/loadPages.js"></script>
+    <script src="../Scripts/scene.js"></script>
 </head>
 <body>
     <!-- 顶部导航 -->
@@ -15,12 +26,15 @@
             <h1>Fakebook</h1>
         </div>
         <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
             <div class="nav-avatar">
-                <i class="fas fa-user"></i>
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
             </div>
             <div class="nav-user-details">
-                <span class="nav-username">用户名</span>
-                <span class="nav-user-id">@username</span>
+                <span class="nav-username">John Doe</span>
+                <span class="nav-user-id">@johndoe</span>
             </div>
         </div>
     </nav>
@@ -29,13 +43,13 @@
         <!-- 左侧栏 - 导航菜单 -->
         <aside class="sidebar sidebar-left">
             <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
-                <button class="btn outline" id="homeBtn" onclick="goHome()"><i class="fas fa-home"></i> 主页</button>
-                <button class="btn outline" onclick="window.location.href='exploration.html'"><i class="fas fa-compass"></i> 探索</button>
-                <button class="btn outline" id="followBtn"><i class="fas fa-heart"></i> 关注</button>
-                <button class="btn outline"><i class="fas fa-envelope"></i> 私信</button>
-                <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
-                <button class="btn outline"><i class="fas fa-bookmark"></i> 收藏</button>
-                <button class="btn outline" onclick="window.location.href='../UserModule/editUserInfo.html'"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="homeBtn"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline" id="explorationBtn"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline" id="messageBtn"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline"  id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="favoritesBtn"><i class="fas fa-bookmark"></i> 收藏</button>
+                <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
                 <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
                 <button class="btn outline active" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
             </div>
@@ -137,19 +151,25 @@
                 <div class="avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <h2 style="font-size: 22px; margin-bottom: 5px; color: #333;"></h2>
-                <p class="user-id" style="font-size: 15px; color: #777; margin-bottom: 10px;"></p>
-                <p class="user-bio" style="color: #666; font-size: 14px; line-height: 1.5; margin: 10px 0 18px 0;"></p>
+                <h2>用户名</h2>
+                <p class="user-id">@username · ID: 2023001</p>
+                <p class="user-bio">这个人很懒，什么也没留下。</p>
             </div>
             <div class="stats">
                 <div class="stat-item">
-                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">0</div>
-                    <div class="label" style="font-size: 13px; color: #777;">文章</div>
+                    <div class="count">0</div>
+                    <div class="label">文章</div>
                 </div>
                 <div class="stat-item">
-                    <div class="count" style="font-size: 22px; font-weight: 600; color: #3498db; margin-bottom: 5px;">0</div>
-                    <div class="label" style="font-size: 13px; color: #777;">粉丝</div>
+                    <div class="count">0</div>
+                    <div class="label">粉丝</div>
                 </div>
+            </div>
+            <!-- 添加关注按钮 -->
+            <div id="followBtnContainer" style="margin-top: 20px; display: none;">
+                <button id="followBtn" class="btn" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> 关注
+                </button>
             </div>
         </aside>
     </div>
@@ -157,134 +177,15 @@
     <script>
         // 从localStorage加载用户数据
         document.addEventListener('DOMContentLoaded', function() {
-            const currentUsername = localStorage.getItem('currentUser');
+            loadUserInfo();
             
-            if (!currentUsername) {
-                alert('请先登录系统');
-                window.location.href = '../UserModule/login.html';
-                return;
-            }
+            loadCurrentUser();
             
-            // 获取用户完整信息
+            loadPages();
+            
+            // 获取当前用户信息
             const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            
-            // 处理currentUser
-            let currentUser;
-            if (currentUsername === 'admin') {
-                currentUser = { 
-                    username: 'admin',
-                    isAdmin: true
-                };
-            } else {
-                currentUser = registeredUsers[currentUsername] || {};
-                if (!currentUser.username) {
-                    alert('当前用户信息不存在');
-                    window.location.href = '../UserModule/login.html';
-                    return;
-                }
-            }
-            
-            // 设置导航栏用户信息
-            const navUsername = document.querySelector('.nav-username');
-            const navUserId = document.querySelector('.nav-user-id');
-            const navAvatar = document.querySelector('.nav-avatar');
-            
-            if (navUsername) {
-                navUsername.textContent = currentUser.username;
-            }
-            if (navUserId) {
-                navUserId.textContent = `@${currentUser.username.toLowerCase()}`;
-            }
-            
-            // 设置导航栏头像
-            if (navAvatar && currentUser.avatar) {
-                navAvatar.innerHTML = '';
-                const avatarImg = document.createElement('img');
-                avatarImg.src = currentUser.avatar;
-                avatarImg.alt = currentUser.username;
-                navAvatar.appendChild(avatarImg);
-            } else if (navAvatar) {
-                // 如果没有头像，显示默认图标
-                navAvatar.innerHTML = '<i class="fas fa-user"></i>';
-            }
-            
-            // 设置右侧侧边栏用户信息
-            const rightSidebar = document.querySelector('.sidebar-right .user-profile');
-            const rightAvatar = rightSidebar.querySelector('.avatar');
-            const rightUsername = rightSidebar.querySelector('h2');
-            const rightUserId = rightSidebar.querySelector('.user-id');
-            
-            // 设置用户名
-            if (rightUsername) {
-                rightUsername.textContent = currentUser.username;
-            }
-            
-            // 设置用户ID
-            if (rightUserId) {
-                rightUserId.innerHTML = `@${currentUser.username.toLowerCase()} · ID: ${currentUser.studentId || '2023001'}`;
-            }
-            
-            // 设置右侧侧边栏头像
-            if (rightAvatar && currentUser.avatar) {
-                rightAvatar.innerHTML = '';
-                const avatarImg = document.createElement('img');
-                avatarImg.src = currentUser.avatar;
-                avatarImg.alt = currentUser.username;
-                avatarImg.style.width = '100%';
-                avatarImg.style.height = '100%';
-                avatarImg.style.borderRadius = '50%';
-                avatarImg.style.objectFit = 'cover';
-                rightAvatar.appendChild(avatarImg);
-            } else if (rightAvatar) {
-                // 如果没有头像，显示默认图标
-                rightAvatar.innerHTML = '<i class="fas fa-user"></i>';
-            }
-            
-            // 添加用户简介到右侧侧边栏
-            const existingBio = rightSidebar.querySelector('.user-bio');
-            if (existingBio) {
-                existingBio.remove();
-            }
-            
-            const bioElement = document.createElement('p');
-            bioElement.className = 'user-bio';
-            bioElement.textContent = currentUser.bio || '这个人很懒，什么也没留下。';
-            rightSidebar.insertBefore(
-                bioElement, 
-                rightSidebar.querySelector('.stats')
-            );
-            
-            // 显示文章数量
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const userArticles = articles.filter(article => article.author === currentUser.username);
-            const rightStats = document.querySelector('.sidebar-right .stats');
-            if (rightStats) {
-                const articleCount = rightStats.querySelector('.stat-item:first-child .count');
-                if (articleCount) {
-                    articleCount.textContent = userArticles.length;
-                }
-            }
-            
-            // 显示粉丝数
-            const followersCount = currentUser.followers ? currentUser.followers.length : 0;
-            if (rightStats) {
-                const followerCount = rightStats.querySelector('.stat-item:last-child .count');
-                if (followerCount) {
-                    followerCount.textContent = followersCount;
-                }
-            }
-            
-            // 退出登录功能
-            document.getElementById('logoutBtn').addEventListener('click', function() {
-                localStorage.removeItem('currentUser');
-                localStorage.removeItem('viewUser');
-                window.location.href = '../UserModule/login.html';
-            });
-            
-            // 为新建文章按钮添加跳转功能
-            document.getElementById('createArticleBtn').addEventListener('click', function() {
-                window.location.href = 'createArticle.html';
-            });
+            // 注意：currentUser已经由loadCurrentUser()函数设置为全局变量
             
             // 文章标题字符计数器
             const titleInput = document.getElementById('title');
@@ -427,8 +328,8 @@
                         title: title,
                         content: content,
                         tags: tags,
-                        author: currentUser.username,
-                        authorAvatar: currentUser.avatar || '../images/default_avatar.jpg',
+                        author: window.currentUser.username,
+                        authorAvatar: window.currentUser.avatar || '../images/default_avatar.jpg',
                         date: new Date().toISOString(),
                         coverImage: previewImage.src || null,
                         likes: 0,  // 点赞数
@@ -446,19 +347,23 @@
                     localStorage.setItem('articles', JSON.stringify(articles));
                     
                     // 给关注者发送新文章通知
-                    // 获取当前用户信息和关注者
-                    if (currentUser.followers && Array.isArray(currentUser.followers)) {
-                        currentUser.followers.forEach(follower => {
-                            // 如果addNotification函数存在，则调用它
-                            if (typeof addNotification === 'function') {
-                                addNotification('post_published', currentUser.username, follower);
-                            } else {
-                                console.log('发送新文章通知给', follower);
-                            }
-                        });
+                    try {
+                        // 获取当前用户信息和关注者
+                        if (window.currentUser && window.currentUser.followers && Array.isArray(window.currentUser.followers)) {
+                            window.currentUser.followers.forEach(follower => {
+                                // 如果addNotification函数存在，则调用它
+                                if (typeof addNotification === 'function') {
+                                    addNotification('post_published', window.currentUser.username, follower);
+                                } else {
+                                    console.log('发送新文章通知给', follower);
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('发送通知时出错:', error);
                     }
                     
-                    // 直接跳转到主页，不显示弹窗
+                    // 无论是否发送通知成功，都跳转到主页
                     window.location.href = 'homepage.html';
                 }, 1500);
             });
@@ -469,20 +374,6 @@
                     window.location.href = 'homepage.html';
                 }
             });
-            
-            // 关注按钮
-            document.getElementById('followBtn').addEventListener('click', function() {
-                window.location.href = 'following.html';
-            });
-            
-            // 为通知按钮添加跳转功能
-            const notificationBtn = document.getElementById('notificationBtn');
-            if (notificationBtn) {
-                notificationBtn.addEventListener('click', function() {
-                    localStorage.setItem('viewUser', currentUsername);
-                    window.location.href = 'notification.html';
-                });
-            }
         });
 
         // 添加通知函数
@@ -532,12 +423,6 @@
             
             // 保存回localStorage
             localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-        }
-
-        function goHome() {
-            const currentUsername = localStorage.getItem('currentUser');
-            localStorage.setItem('viewUser', currentUsername);
-            window.location.href = 'homepage.html';
         }
     </script>
 </body>

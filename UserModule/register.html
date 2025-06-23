@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>用户注册</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="../Scripts/loadUserInfo.js"></script>
     <style>
         * {
             margin: 0;
@@ -759,17 +760,17 @@
             
             // 模拟API请求
             setTimeout(() => {
-                // 创建新用户对象
-                const User = {
+                User = {
                     studentId: studentId,
                     username: username,
                     password: password,
                     registrationDate: new Date().toISOString(),
-                    avatar: "../images/default_avatar.jpg",                  // 默认空头像（可用默认URL）
-                    bio: "",                     // 默认空简介
-                    following: [],               // 空关注列表（存储用户名）
-                    followers: [],                // 空粉丝列表（存储用户名）
-                    notices: []                  // 空通知列表（结构：[{time: 时间字符串, content: 通知内容}]）
+                    avatar: "../images/default_avatar.jpg",
+                    bio: "",
+                    following: [],
+                    followers: [],
+                    notices: [],
+                    favorites: []
                 };
                 
                 // 保存到localStorage（合并已注册用户）
