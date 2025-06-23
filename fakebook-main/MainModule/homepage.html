@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页 - Fakebook</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="../Style/day-style.css">
+    <link rel="stylesheet" href="../Style/moon-style.css">
+    <script src="../Scripts/loadUserInfo.js"></script>
+    <script src="../Scripts/displayArticle.js"></script>
+    <script src="../Scripts/loadPages.js"></script>
+    <script src="../Scripts/scene.js"></script>
+    <script src="../Scripts/notice.js"></script>
+    <style>
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-blog"></i>
+            <h1>Fakebook</h1>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
+            <div class="nav-avatar">
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
+            </div>
+            <div class="nav-user-details">
+                <span class="nav-username">John Doe</span>
+                <span class="nav-user-id">@johndoe</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 左侧栏 - 用户信息 -->
+        <aside class="sidebar sidebar-left">
+            <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
+                <button class="btn outline active" id="homeBtn"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline" id="explorationBtn"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline" id="messageBtn"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline" id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="favoritesBtn"><i class="fas fa-bookmark"></i> 收藏</button>
+                <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+                <button class="btn outline" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
+            </div>
+        </aside>
+        <!-- 中间内容区 - Fakebook列表 -->
+        <main class="content">
+            <div class="section-header">
+                <h2 class="section-title">我的文章</h2>
+                <div class="filters">
+                    <button class="btn outline" id="sortBtn" onclick="toggleSort()">
+                        <i class="fas fa-clock"></i> 最新
+                    </button>
+                </div>
+            </div>
+            <div class="blog-container" id="blogContainer">
+            </div>
+        </main>
+        <!-- 右侧栏 - 推荐内容 -->
+        <aside class="sidebar sidebar-right">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2></h2>
+                <p class="user-id"></p>
+                <p class="user-bio"></p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="count"></div>
+                    <div class="label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="count"></div>
+                    <div class="label">粉丝</div>
+                </div>
+            </div>
+            <!-- 添加关注按钮 -->
+            <div id="followBtnContainer" style="margin-top: 20px; display: none;">
+                <button id="followBtn" class="btn" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> 关注
+                </button>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- 创建Fakebook按钮 -->
+    <button class="create-blog-btn" id="floatingCreateBtn">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <script>
+        // 全局排序状态
+        let globalCurrentSort = 'latest';
+        
+        // 切换排序方式函数
+        function toggleSort() {
+            console.log('toggleSort函数被调用，当前排序方式:', globalCurrentSort);
+            
+            // 切换排序方式
+            globalCurrentSort = globalCurrentSort === 'latest' ? 'hottest' : 'latest';
+            window.currentSort = globalCurrentSort;
+            
+            console.log('切换后排序方式:', globalCurrentSort);
+            
+            // 更新按钮文本和图标
+            const sortBtn = document.getElementById('sortBtn');
+            if (sortBtn) {
+                const icon = globalCurrentSort === 'latest' ? 'fa-clock' : 'fa-fire';
+                const text = globalCurrentSort === 'latest' ? '最新' : '最热';
+                sortBtn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+            }
+            
+            // 重新加载文章
+            loadArticles();
+        }
+        
+        // 从localStorage加载用户数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            
+            // 加载并显示文章
+            loadArticles();
+            
+            loadPages();
+            
+            // 设置默认排序方式
+            window.currentSort = 'latest';
+            globalCurrentSort = 'latest';
+
+            // 设置中间栏标题
+            const sectionTitle = document.querySelector('.section-title');
+            if (sectionTitle) {
+                if (viewUser.username === currentUser.username) {
+                    sectionTitle.textContent = '我的文章';
+                } else {
+                    sectionTitle.textContent = `${viewUser.username}的文章`;
+                }
+            }
+
+            // 主页按钮逻辑
+            document.getElementById('homeBtn').addEventListener('click', function() {
+                localStorage.setItem('viewUser', currentUsername);
+                // 添加强制刷新或使用查询参数确保页面重新加载
+                window.location.href = 'homepage.html?refresh=' + new Date().getTime();
+            });
+
+            document.getElementById('followingBtn').addEventListener('click', function() {
+                localStorage.setItem('viewUser', currentUsername);
+                window.location.href = 'following.html';
+            });
+
+            // 添加私信按钮的事件监听器
+            document.getElementById('messageBtn').addEventListener('click', function() {
+                localStorage.setItem('viewUser', currentUsername);
+                window.location.href = 'message.html';
+            });
+        });
+        
+        // 检查是否已关注
+        function checkIfFollowing(currentUser, viewUser) {
+            // 初始化关注列表（如果不存在）
+            if (!currentUser.following) currentUser.following = [];
+            if (!viewUser.followers) viewUser.followers = [];
+            
+            // 检查当前用户的关注列表中是否包含查看的用户
+            return currentUser.following.includes(viewUser.username);
+        }
+        
+        // 更新关注按钮状态
+        function updateFollowButtonState(button, isFollowing) {
+            if (isFollowing) {
+                button.innerHTML = '<i class="fas fa-user-check"></i> 已关注';
+                button.classList.add('outline');
+            } else {
+                button.innerHTML = '<i class="fas fa-user-plus"></i> 关注';
+                button.classList.remove('outline');
+            }
+        }
+        
+        // 切换关注状态
+        function toggleFollowStatus(currentUser, viewUser) {
+            // 初始化关注列表（如果不存在）
+            if (!currentUser.following) currentUser.following = [];
+            if (!viewUser.followers) viewUser.followers = [];
+            
+            const isFollowing = checkIfFollowing(currentUser, viewUser);
+            const followBtn = document.getElementById('followBtn');
+            
+            if (isFollowing) {
+                // 取消关注
+                currentUser.following = currentUser.following.filter(username => username !== viewUser.username);
+                viewUser.followers = viewUser.followers.filter(username => username !== currentUser.username);
+            } else {
+                // 添加关注
+                currentUser.following.push(viewUser.username);
+                viewUser.followers.push(currentUser.username);
+                
+                // 给被关注用户发送新粉丝通知
+                addNotification('new_follower', currentUser.username, viewUser.username);
+            }
+            
+            // 更新按钮状态
+            updateFollowButtonState(followBtn, !isFollowing);
+            
+            // 更新粉丝数显示
+            document.querySelectorAll('.stat-item .count')[1].textContent = viewUser.followers.length;
+            
+            // 保存更新后的用户数据
+            saveUserData(currentUser, viewUser);
+        }
+        
+        // 保存用户数据
+        function saveUserData(currentUser, viewUser) {
+            // 获取所有用户
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 更新用户数据
+            if (currentUser.username !== 'admin') {
+                registeredUsers[currentUser.username.toLowerCase()] = currentUser;
+            }
+            
+            if (viewUser.username !== 'admin') {
+                registeredUsers[viewUser.username.toLowerCase()] = viewUser;
+            }
+            
+            // 保存回localStorage
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+            
+            // 只保存用户名，不保存整个对象
+            localStorage.setItem('currentUser', currentUser.username.toLowerCase());
+            localStorage.setItem('viewUser', viewUser.username.toLowerCase());
+        }
+    </script>
+</body>
+</html>

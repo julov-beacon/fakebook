@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑个人资料 - Fakebook</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="../Style/day-style.css">
+    <link rel="stylesheet" href="../Style/moon-style.css">
+    <script src="../Scripts/loadUserInfo.js"></script>
+    <script src="../Scripts/loadPages.js"></script>
+    <script src="../Scripts/scene.js"></script>
+    <style>
+        /* 头像预览区域样式 */
+        .avatar-section {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3498db, #8e44ad);
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        #changeAvatarBtn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+        
+        /* 夜间模式样式 */
+        html[data-theme="night"] .form-container {
+            background-color: #1e1e1e;
+        }
+        
+        html[data-theme="night"] .form-header h1,
+        html[data-theme="night"] .form-header p {
+            color: #f5f5f5;
+        }
+        
+        html[data-theme="night"] .form-group {
+            background-color: #252525;
+            border-color: #444;
+        }
+        
+        html[data-theme="night"] .form-label {
+            color: #ddd;
+        }
+        
+        html[data-theme="night"] .form-input,
+        html[data-theme="night"] .textarea {
+            background-color: #333;
+            color: #f5f5f5;
+            border-color: #444;
+            border: 1px solid #444;
+            outline: none;
+        }
+        
+        html[data-theme="night"] .form-input:focus,
+        html[data-theme="night"] .textarea:focus {
+            border-color: #4a89dc;
+            box-shadow: 0 0 0 2px rgba(74, 137, 220, 0.2);
+        }
+        
+        html[data-theme="night"] .avatar-preview {
+            background: linear-gradient(45deg, #4a89dc, #9b59b6);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        html[data-theme="night"] .btn-container {
+            background-color: transparent;
+        }
+        
+        html[data-theme="night"] .cancel-btn {
+            background-color: #333;
+            color: #f5f5f5;
+            border-color: #444;
+        }
+        
+        html[data-theme="night"] .publish-btn {
+            background: linear-gradient(to right, #4a89dc, #9b59b6);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-blog"></i>
+            <h1>Fakebook</h1>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
+            <div class="nav-avatar">
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
+            </div>
+            <div class="nav-user-details">
+                <span class="nav-username">John Doe</span>
+                <span class="nav-user-id">@johndoe</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 左侧栏 - 导航菜单 -->
+        <aside class="sidebar sidebar-left">
+            <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
+                <button class="btn outline" id="homeBtn"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline" id="explorationBtn"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline" id="messageBtn"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline"  id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="favoritesBtn"><i class="fas fa-bookmark"></i> 收藏</button>
+                <button class="btn outline active" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+                <button class="btn outline" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
+            </div>
+        </aside>
+        
+        <!-- 中间内容区 - 编辑资料表单 -->
+        <main class="content form-container">
+            <div class="form-header">
+                <h1><i class="fas fa-user-edit"></i> 编辑个人资料</h1>
+                <p>完善您的个人信息</p>
+            </div>
+            
+            <div class="form-content">
+                <div class="avatar-section">
+                    <div class="avatar-preview" id="avatarPreview">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <button class="btn" id="changeAvatarBtn">
+                        <i class="fas fa-camera"></i> 更换头像
+                    </button>
+                    <input type="file" id="avatarInput" style="display:none;" accept="image/*">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="username">
+                        <i class="fas fa-user"></i> 用户名
+                    </label>
+                    <input type="text" id="username" class="form-input" placeholder="您的用户名" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="studentId">
+                        <i class="fas fa-id-card"></i> 学号
+                    </label>
+                    <input type="text" id="studentId" class="form-input" placeholder="您的学号">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="bio">
+                        <i class="fas fa-quote-left"></i> 个人简介
+                    </label>
+                    <textarea id="bio" class="form-input textarea" placeholder="介绍一下自己吧..."></textarea>
+                </div>
+                
+                <div class="btn-container">
+                    <button class="cancel-btn" id="cancelBtn">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button class="publish-btn" id="saveBtn">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 右侧栏 - 用户信息 -->
+        <aside class="sidebar sidebar-right">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>用户名</h2>
+                <p class="user-id">@username · ID: 2023001</p>
+                <p class="user-bio">这个人很懒，什么也没留下。</p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="count">0</div>
+                    <div class="label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="count">0</div>
+                    <div class="label">粉丝</div>
+                </div>
+            </div>
+            <!-- 添加关注按钮 -->
+            <div id="followBtnContainer" style="margin-top: 20px; display: none;">
+                <button id="followBtn" class="btn" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> 关注
+                </button>
+            </div>
+        </aside>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadPages();
+            loadCurrentUser();
+            
+            // 填充表单数据
+            document.getElementById('username').value = currentUser.username;
+            document.getElementById('studentId').value = currentUser.studentId || '';
+            document.getElementById('bio').value = currentUser.bio || '';
+            
+            // 如果用户有头像，显示头像
+            if (currentUser.avatar) {
+                const previewDiv = document.getElementById('avatarPreview');
+                previewDiv.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = currentUser.avatar;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                previewDiv.appendChild(img);
+            }
+            
+            // 表单提交处理
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                saveChanges();
+            });
+            
+            // 取消按钮功能
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                window.location.href = 'homepage.html';
+            });
+            
+            // 更改头像功能
+            document.getElementById('changeAvatarBtn').addEventListener('click', function() {
+                document.getElementById('avatarInput').click();
+            });
+            
+            // 头像预览功能
+            document.getElementById('avatarInput').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewDiv = document.getElementById('avatarPreview');
+                        previewDiv.innerHTML = '';
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.borderRadius = '50%';
+                        img.style.objectFit = 'cover';
+                        previewDiv.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+        
+        // 保存用户修改
+        function saveChanges() {
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            if (!currentUsername) {
+                alert('请先登录系统');
+                window.location.href = '../UserModule/login.html';
+                return;
+            }
+            
+            const studentId = document.getElementById('studentId').value;
+            const bio = document.getElementById('bio').value;
+            
+            // 获取用户完整信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 处理currentUser
+            if (currentUsername === 'admin') {
+                alert('管理员账户不能修改个人信息');
+                return;
+            }
+            
+            const currentUser = registeredUsers[currentUsername] || {};
+            
+            // 更新个人信息
+            currentUser.studentId = studentId;
+            currentUser.bio = bio;
+            
+            // 检查是否有新头像
+            const avatarPreview = document.getElementById('avatarPreview').querySelector('img');
+            if (avatarPreview && avatarPreview.src !== currentUser.avatar) {
+                currentUser.avatar = avatarPreview.src;
+            }
+            
+            // 保存到localStorage
+            registeredUsers[currentUsername] = currentUser;
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+            
+            // 直接跳转到主页，无需弹窗提示
+            window.location.href = 'homepage.html';
+        }
+    </script>
+</body>
+</html>

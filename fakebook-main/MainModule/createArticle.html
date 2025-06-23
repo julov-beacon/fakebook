@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布新文章</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="../Style/day-style.css">
+    <link rel="stylesheet" href="../Style/moon-style.css">
+    <script src="../Scripts/loadUserInfo.js"></script>
+    <script src="../Scripts/loadPages.js"></script>
+    <script src="../Scripts/scene.js"></script>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-blog"></i>
+            <h1>Fakebook</h1>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
+            <div class="nav-avatar">
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
+            </div>
+            <div class="nav-user-details">
+                <span class="nav-username">John Doe</span>
+                <span class="nav-user-id">@johndoe</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 左侧栏 - 导航菜单 -->
+        <aside class="sidebar sidebar-left">
+            <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
+                <button class="btn outline" id="homeBtn"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline" id="explorationBtn"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline" id="messageBtn"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline"  id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="favoritesBtn"><i class="fas fa-bookmark"></i> 收藏</button>
+                <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+                <button class="btn outline active" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
+            </div>
+        </aside>
+        
+        <!-- 中间内容区 - 表单 -->
+        <main class="content">
+            <div class="form-header">
+                <h1><i class="fas fa-feather-alt"></i> 发布文章</h1>
+                <p>分享你的知识和见解</p>
+            </div>
+            
+            <div class="form-content">
+                <!-- 左栏 -->
+                <div class="left-column">
+                    <div class="form-group">
+                        <label class="form-label" for="title">
+                            <i class="fas fa-heading"></i> 文章标题
+                        </label>
+                        <input 
+                            type="text" 
+                            id="title" 
+                            class="form-input" 
+                            placeholder="输入吸引人的标题..." 
+                            maxlength="100"
+                        >
+                        <div class="char-count">
+                            已输入: <span class="word-counter">0</span>/100字符
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="tags">
+                            <i class="fas fa-tags"></i> 文章标签
+                        </label>
+                        <div class="tags-section">
+                            <div class="tags-container" id="tagsContainer">
+                                <!-- 动态标签将会添加到这里 -->
+                            </div>
+                            <input 
+                                type="text" 
+                                id="tagInput" 
+                                class="tag-input" 
+                                placeholder="添加标签..."
+                            >
+                        </div>
+                        <div class="char-count">
+                            最多添加5个标签，按回车添加
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="cover">
+                            <i class="fas fa-image"></i> 封面图片
+                        </label>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <p class="upload-text">点击或拖拽图片到此处上传</p>
+                            <p class="upload-note">推荐尺寸：1200×630像素，支持JPG/PNG格式</p>
+                        </div>
+                        <img src="" id="previewImage" class="preview-image" style="display:none;">
+                        <input type="file" id="cover" accept="image/*" style="display:none;">
+                    </div>
+                </div>
+                
+                <!-- 全宽内容编辑区 -->
+                <div class="full-width">
+                    <div class="form-group content-editor">
+                        <label class="form-label" for="content">
+                            <i class="fas fa-align-left"></i> 文章内容
+                        </label>
+                        <textarea 
+                            id="content" 
+                            class="form-input textarea" 
+                            placeholder="开始撰写你的文章内容..."
+                        ></textarea>
+                        <div class="char-count">
+                            已输入: <span class="word-counter">0</span>字
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <button class="cancel-btn" id="cancelBtn">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+                <button class="publish-btn" id="publishBtn">
+                    <i class="fas fa-paper-plane"></i> 发布
+                </button>
+            </div>
+        </main>
+        
+        <!-- 右侧栏 - 用户信息 -->
+        <aside class="sidebar sidebar-right">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>用户名</h2>
+                <p class="user-id">@username · ID: 2023001</p>
+                <p class="user-bio">这个人很懒，什么也没留下。</p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="count">0</div>
+                    <div class="label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="count">0</div>
+                    <div class="label">粉丝</div>
+                </div>
+            </div>
+            <!-- 添加关注按钮 -->
+            <div id="followBtnContainer" style="margin-top: 20px; display: none;">
+                <button id="followBtn" class="btn" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> 关注
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // 从localStorage加载用户数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            
+            loadCurrentUser();
+            
+            loadPages();
+            
+            // 获取当前用户信息
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            // 注意：currentUser已经由loadCurrentUser()函数设置为全局变量
+            
+            // 文章标题字符计数器
+            const titleInput = document.getElementById('title');
+            const titleCounter = titleInput.parentElement.querySelector('.word-counter');
+            
+            titleInput.addEventListener('input', function() {
+                titleCounter.textContent = this.value.length;
+            });
+            
+            // 文章内容字符计数器
+            const contentInput = document.getElementById('content');
+            const contentCounter = contentInput.parentElement.querySelector('.word-counter');
+            
+            contentInput.addEventListener('input', function() {
+                contentCounter.textContent = this.value.length;
+            });
+            
+            // 封面图片上传功能
+            const uploadArea = document.getElementById('uploadArea');
+            const coverInput = document.getElementById('cover');
+            const previewImage = document.getElementById('previewImage');
+            
+            uploadArea.addEventListener('click', function() {
+                coverInput.click();
+            });
+            
+            // 拖拽上传
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#3498db';
+                this.style.background = 'rgba(52, 152, 219, 0.1)';
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#cbd5e0';
+                this.style.background = '#f8f9fa';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#cbd5e0';
+                this.style.background = '#f8f9fa';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    handleImageUpload(files[0]);
+                }
+            });
+            
+            coverInput.addEventListener('change', function(e) {
+                if (e.target.files && e.target.files[0]) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+            
+            function handleImageUpload(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewImage.style.display = 'block';
+                    uploadArea.style.display = 'none';
+                }
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // 标签功能
+            const tagInput = document.getElementById('tagInput');
+            const tagsContainer = document.getElementById('tagsContainer');
+            const tags = [];
+            
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim() !== '') {
+                    e.preventDefault();
+                    
+                    if (tags.length >= 5) {
+                        alert('最多只能添加5个标签');
+                        return;
+                    }
+                    
+                    // 创建新标签
+                    const tagValue = this.value.trim();
+                    if (tags.includes(tagValue)) {
+                        alert('标签已存在');
+                        return;
+                    }
+                    
+                    tags.push(tagValue);
+                    
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `
+                        ${tagValue}
+                        <span class="tag-remove">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    `;
+                    
+                    tagsContainer.appendChild(tagElement);
+                    
+                    // 添加删除功能
+                    const removeBtn = tagElement.querySelector('.tag-remove');
+                    removeBtn.addEventListener('click', function() {
+                        const index = tags.indexOf(tagValue);
+                        if (index > -1) {
+                            tags.splice(index, 1);
+                        }
+                        tagsContainer.removeChild(tagElement);
+                    });
+                    
+                    // 清空输入框
+                    this.value = '';
+                }
+            });
+            
+            // 发布文章按钮
+            document.getElementById('publishBtn').addEventListener('click', function() {
+                const title = titleInput.value.trim();
+                const content = contentInput.value.trim();
+                
+                if (!title) {
+                    alert('请输入文章标题');
+                    titleInput.focus();
+                    return;
+                }
+                
+                // 已删除对文章内容长度的限制
+                
+                // 显示加载状态
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发布中...';
+                this.disabled = true;
+                
+                // 模拟文章发布过程
+                setTimeout(() => {
+                    // 创建文章数据对象，包含所有必需的字段
+                    const articleData = {
+                        id: Date.now().toString(), // 添加唯一ID
+                        title: title,
+                        content: content,
+                        tags: tags,
+                        author: window.currentUser.username,
+                        authorAvatar: window.currentUser.avatar || '../images/default_avatar.jpg',
+                        date: new Date().toISOString(),
+                        coverImage: previewImage.src || null,
+                        likes: 0,  // 点赞数
+                        comments: [],  // 评论
+                        views: 0  // 阅读数
+                    };
+                    
+                    // 从localStorage获取现有文章
+                    const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+                    
+                    // 将新文章添加到数组开头
+                    articles.unshift(articleData);
+                    
+                    // 保存回localStorage
+                    localStorage.setItem('articles', JSON.stringify(articles));
+                    
+                    // 给关注者发送新文章通知
+                    try {
+                        // 获取当前用户信息和关注者
+                        if (window.currentUser && window.currentUser.followers && Array.isArray(window.currentUser.followers)) {
+                            window.currentUser.followers.forEach(follower => {
+                                // 如果addNotification函数存在，则调用它
+                                if (typeof addNotification === 'function') {
+                                    addNotification('post_published', window.currentUser.username, follower);
+                                } else {
+                                    console.log('发送新文章通知给', follower);
+                                }
+                            });
+                        }
+                    } catch (error) {
+                        console.error('发送通知时出错:', error);
+                    }
+                    
+                    // 无论是否发送通知成功，都跳转到主页
+                    window.location.href = 'homepage.html';
+                }, 1500);
+            });
+            
+            // 取消按钮
+            document.getElementById('cancelBtn').addEventListener('click', function() {
+                if (confirm('确定要取消发布吗？未保存的内容将丢失。')) {
+                    window.location.href = 'homepage.html';
+                }
+            });
+        });
+
+        // 添加通知函数
+        function addNotification(type, fromUser, targetUser) {
+            // 获取用户数据
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const user = registeredUsers[targetUser];
+            
+            if (!user) return;
+            
+            // 初始化notices数组（如果不存在）
+            if (!user.notices) {
+                user.notices = [];
+            }
+            
+            // 根据通知类型生成content
+            let content = '';
+            switch(type) {
+                case 'post_published':
+                    content = `你关注的${fromUser}发布了新文章，快去看看吧`;
+                    break;
+                case 'comment_on_post':
+                    content = `你的文章有新的评论`;
+                    break;
+                case 'like_on_post':
+                    content = `你的文章有新的点赞`;
+                    break;
+                case 'new_follower':
+                    content = `有位用户${fromUser}成为了你的新粉丝`;
+                    break;
+                default:
+                    content = '你有一条新通知';
+            }
+            
+            const newNotification = {
+                id: Date.now() + '_' + Math.floor(Math.random()*10000),
+                type: type,
+                fromUser: fromUser,
+                targetUser: targetUser,
+                content: content,
+                time: new Date().toLocaleString(),
+                isRead: false
+            };
+            
+            // 将新通知添加到通知列表的最前面
+            user.notices.unshift(newNotification);
+            
+            // 保存回localStorage
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+        }
+    </script>
+</body>
+</html>
