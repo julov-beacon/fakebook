@@ -148,11 +148,29 @@
             loadAllArticles();
         }
         
-        // 搜索功能
+        // 实时搜索功能
         function performSearch() {
             const searchInput = document.getElementById('searchInput');
             globalSearchTerm = searchInput.value.trim().toLowerCase();
-            loadArticles();
+            // 实时更新显示的文章卡片
+            loadAllArticles();
+            
+            // 显示搜索反馈
+            const resultCount = document.querySelectorAll('.blog-card').length;
+            const searchFeedback = document.getElementById('searchFeedback') || document.createElement('div');
+            searchFeedback.id = 'searchFeedback';
+            searchFeedback.style.fontSize = '14px';
+            searchFeedback.style.color = '#666';
+            searchFeedback.style.margin = '10px 0';
+            
+            if (globalSearchTerm) {
+                searchFeedback.textContent = `找到 ${resultCount} 个结果`;
+                if (!document.getElementById('searchFeedback')) {
+                    document.querySelector('.section-header').appendChild(searchFeedback);
+                }
+            } else if (document.getElementById('searchFeedback')) {
+                document.getElementById('searchFeedback').remove();
+            }
         }
         
         // 从localStorage加载用户数据
@@ -164,14 +182,11 @@
             // 加载并显示所有文章
             loadAllArticles();
             
-            // 添加搜索功能事件监听
+            // 添加实时搜索功能
             const searchInput = document.getElementById('searchInput');
-            searchInput.addEventListener('input', performSearch);
-            searchInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    performSearch();
-                }
-            });
+            
+            // 使用防抖处理实时搜索，300毫秒延迟
+            searchInput.addEventListener('input', debounce(performSearch, 300));
             
             // 为退出登录按钮添加事件监听器
             document.getElementById('logoutBtn').addEventListener('click', function() {
