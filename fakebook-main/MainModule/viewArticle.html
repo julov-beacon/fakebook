@@ -17,6 +17,7 @@
     <script src="../Scripts/loadUserInfo.js"></script>
     <script src="../Scripts/loadPages.js"></script>
     <script src="../Scripts/scene.js"></script>
+    <script src="../Scripts/notice.js"></script>
     <style>
     </style>
 </head>
@@ -539,70 +540,6 @@
             } else {
                 alert('未找到该用户信息');
             }
-        }
-        
-        // 添加通知函数
-        function addNotification(type, fromUser, targetUser) {
-            // 获取用户数据
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            const user = registeredUsers[targetUser];
-            
-            if (!user) return;
-            
-            // 初始化notices数组（如果不存在）
-            if (!user.notices) {
-                user.notices = [];
-            }
-            
-            // 根据通知类型生成content
-            let content = '';
-            switch(type) {
-                case 'post_published':
-                    content = `你关注的${fromUser}发布了新文章，快去看看吧`;
-                    break;
-                case 'comment_on_post':
-                    content = `你的文章有新的评论`;
-                    break;
-                case 'like_on_post':
-                    content = `你的文章有新的点赞`;
-                    break;
-                case 'new_follower':
-                    content = `有位用户${fromUser}成为了你的新粉丝`;
-                    break;
-                default:
-                    content = '你有一条新通知';
-            }
-            
-            const newNotification = {
-                id: Date.now() + '_' + Math.floor(Math.random()*10000),
-                type: type,
-                fromUser: fromUser,
-                targetUser: targetUser,
-                content: content,
-                time: new Date().toLocaleString(),
-                isRead: false
-            };
-            
-            // 将新通知添加到通知列表的最前面
-            user.notices.unshift(newNotification);
-            
-            // 保存回localStorage
-            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-        }
-        
-        // 更新侧边栏粉丝数
-        function updateSidebarStats() {
-            const articleId = localStorage.getItem('currentArticle');
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const currentArticle = articles.find(a => a.id === articleId) || {};
-            
-            // 获取注册用户信息
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            const targetUser = registeredUsers[currentArticle.author] || {};
-            
-            // 更新右侧边栏中的粉丝数
-            const followersCount = targetUser.followers ? targetUser.followers.length : 0;
-            document.querySelectorAll('.stat-item .count')[1].textContent = followersCount;
         }
     </script>
 </body>
