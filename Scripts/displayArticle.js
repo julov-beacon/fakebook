@@ -1,3 +1,76 @@
+// 加载文章函数
+function loadArticles() {
+    const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+    const blogContainer = document.getElementById('blogContainer');
+    
+    // 获取当前显示的用户名
+    const viewUsername = localStorage.getItem('viewUser');
+    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    
+    // 获取完整用户信息
+    let viewUser;
+    if (viewUsername === 'admin') {
+        viewUser = {
+            username: 'admin',
+            isAdmin: true
+        };
+    } else {
+        viewUser = registeredUsers[viewUsername] || {};
+        if (!viewUser.username) {
+            console.error('视图用户信息不存在');
+            return;
+        }
+    }
+    
+    // 清空容器
+    blogContainer.innerHTML = '';
+    
+    // 过滤viewUser的文章
+    let userArticles = articles.filter(article => article.author === viewUser.username);
+    
+    // 根据当前排序方式排序文章
+    const currentSort = window.currentSort || 'latest';
+    
+    if (currentSort === 'latest') {
+        // 按最新排序（按日期降序）
+        userArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
+    } else if (currentSort === 'hottest') {
+        // 按最热排序（按热度降序）
+        userArticles.sort((a, b) => {
+            const getHeatScore = (article) => {
+                const views = article.views || 0;
+                const likes = article.likes || 0;
+                const comments = article.comments ? article.comments.length : 0;
+                return views + (likes + comments) * 5;
+            };
+            return getHeatScore(b) - getHeatScore(a);
+        });
+    }
+    
+    // 更新文章数量
+    document.querySelector('.stat-item .count').textContent = userArticles.length;
+    
+    if (userArticles.length === 0) {
+        blogContainer.innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
+                <i class="fas fa-file-alt" style="font-size: 48px; color: #ddd; margin-bottom: 20px;"></i>
+                <p style="color: #999; font-size: 18px;">还没有发布任何文章</p>
+                <button class="btn" style="margin-top: 20px;" onclick="window.location.href='createArticle.html'">
+                    <i class="fas fa-plus"></i> 创建第一篇文章
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    // 生成文章卡片
+    const users = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+    userArticles.forEach(article => {
+        const blogCard = createBlogCard(article, users);
+        blogContainer.appendChild(blogCard);
+    });
+}
+
 // 加载所有文章函数
 function loadAllArticles() {
     const articles = JSON.parse(localStorage.getItem('articles') || '[]');
@@ -300,4 +373,26 @@ function createBlogCard(article, users) {
     `;
     
     return card;
+}
+
+// 查看文章详情
+function viewArticle(articleId) {
+    const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+    // 找到对应的文章
+    const article = articles.find(a => a.id === articleId);
+    if (article) {
+        // 增加阅读数
+        article.views = (article.views || 0) + 1;
+        // 更新localStorage中的文章数据
+        const updatedArticles = articles.map(a => a.id === articleId ? article : a);
+        localStorage.setItem('articles', JSON.stringify(updatedArticles));
+        // 只存储文章ID而不是整个文章对象
+        localStorage.setItem('currentArticle', articleId);
+        // 设置viewUser为currentUser
+        localStorage.setItem('viewUser', localStorage.getItem('currentUser'));
+        // 跳转到文章详情页
+        window.location.href = 'viewArticle.html';
+    } else {
+        alert('文章不存在');
+    }
 }

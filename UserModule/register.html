@@ -83,10 +83,9 @@
         }
         
         .logo h1 {
-            color: #3498db;
+            color: white;
             font-size: 24px;
             font-weight: 900;
-            text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
         }
         
         .slogan {
@@ -760,7 +759,7 @@
             
             // 模拟API请求
             setTimeout(() => {
-                User = {
+                let newUser = {
                     studentId: studentId,
                     username: username,
                     password: password,
@@ -774,7 +773,7 @@
                 };
                 
                 // 保存到localStorage（合并已注册用户）
-                registeredUsers[username.toLowerCase()] = User;
+                registeredUsers[username.toLowerCase()] = newUser;
                 localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
                 
                 // 存储最后注册的用户名

@@ -15,8 +15,10 @@
     <link rel="stylesheet" href="../Style/day-style.css">
     <link rel="stylesheet" href="../Style/moon-style.css">
     <script src="../Scripts/loadUserInfo.js"></script>
+    <script src="../Scripts/displayArticle.js"></script>
     <script src="../Scripts/loadPages.js"></script>
     <script src="../Scripts/scene.js"></script>
+    <script src="../Scripts/notice.js"></script>
     <style>
     </style>
 </head>
@@ -106,33 +108,6 @@
     <script>
         // 全局排序状态
         let globalCurrentSort = 'latest';
-        
-        // 更新通知角标
-        function updateNotificationBadge() {
-            const badge = document.getElementById('notificationBadge');
-            if (!badge) return;
-            
-            // 获取当前用户名
-            const currentUsername = localStorage.getItem('currentUser');
-            if (!currentUsername) return;
-
-            // 获取用户数据
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            const currentUser = registeredUsers[currentUsername];
-            
-            if (!currentUser || !currentUser.notices) {
-                badge.classList.add('hidden');
-                return;
-            }
-            
-            const unreadCount = currentUser.notices.filter(item => !item.isRead).length;
-            
-            if (unreadCount > 0) {
-                badge.classList.remove('hidden');
-            } else {
-                badge.classList.add('hidden');
-            }
-        }
         
         // 切换排序方式函数
         function toggleSort() {
@@ -251,70 +226,6 @@
             saveUserData(currentUser, viewUser);
         }
         
-        // 添加通知函数
-        function addNotification(type, fromUser, toUser) {
-            if (toUser === 'admin') return; // 管理员不接收通知
-            
-            // 获取所有用户
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            
-            // 获取目标用户
-            const targetUser = registeredUsers[toUser.toLowerCase()];
-            if (!targetUser) return;
-            
-            // 初始化通知数组
-            if (!targetUser.notices) targetUser.notices = [];
-            
-            // 获取发送通知用户的头像
-            const fromUserData = registeredUsers[fromUser.toLowerCase()];
-            const fromUserAvatar = fromUserData && fromUserData.avatar ? fromUserData.avatar : '../images/default_avatar.jpg';
-            
-            // 创建通知内容
-            let notificationContent = '';
-            let notificationTitle = '';
-            
-            switch(type) {
-                case 'new_follower':
-                    notificationTitle = '新粉丝';
-                    notificationContent = `<strong>${fromUser}</strong> 关注了你`;
-                    break;
-                case 'new_like':
-                    notificationTitle = '新点赞';
-                    notificationContent = `<strong>${fromUser}</strong> 点赞了你的文章`;
-                    break;
-                case 'new_comment':
-                    notificationTitle = '新评论';
-                    notificationContent = `<strong>${fromUser}</strong> 评论了你的文章`;
-                    break;
-                default:
-                    notificationTitle = '新通知';
-                    notificationContent = `来自 <strong>${fromUser}</strong> 的新通知`;
-            }
-            
-            // 创建新通知
-            const notification = {
-                id: Date.now().toString(),
-                type: type,
-                from: fromUser,
-                fromAvatar: fromUserAvatar,
-                to: toUser,
-                title: notificationTitle,
-                content: notificationContent,
-                date: new Date().toISOString(),
-                isRead: false
-            };
-            
-            // 添加到通知列表
-            targetUser.notices.push(notification);
-            
-            // 保存回localStorage
-            registeredUsers[toUser.toLowerCase()] = targetUser;
-            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-            
-            // 更新通知角标
-            updateNotificationBadge();
-        }
-        
         // 保存用户数据
         function saveUserData(currentUser, viewUser) {
             // 获取所有用户
@@ -335,167 +246,6 @@
             // 只保存用户名，不保存整个对象
             localStorage.setItem('currentUser', currentUser.username.toLowerCase());
             localStorage.setItem('viewUser', viewUser.username.toLowerCase());
-        }
-        
-        // 加载文章函数
-        function loadArticles() {
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const blogContainer = document.getElementById('blogContainer');
-            
-            // 获取当前显示的用户名
-            const viewUsername = localStorage.getItem('viewUser');
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            
-            // 获取完整用户信息
-            let viewUser;
-            if (viewUsername === 'admin') {
-                viewUser = {
-                    username: 'admin',
-                    isAdmin: true
-                };
-            } else {
-                viewUser = registeredUsers[viewUsername] || {};
-                if (!viewUser.username) {
-                    console.error('视图用户信息不存在');
-                    return;
-                }
-            }
-            
-            // 清空容器
-            blogContainer.innerHTML = '';
-            
-            // 过滤viewUser的文章
-            let userArticles = articles.filter(article => article.author === viewUser.username);
-            
-            // 根据当前排序方式排序文章
-            const currentSort = window.currentSort || 'latest';
-            
-            if (currentSort === 'latest') {
-                // 按最新排序（按日期降序）
-                userArticles.sort((a, b) => new Date(b.date) - new Date(a.date));
-            } else if (currentSort === 'hottest') {
-                // 按最热排序（按热度降序）
-                userArticles.sort((a, b) => {
-                    const getHeatScore = (article) => {
-                        const views = article.views || 0;
-                        const likes = article.likes || 0;
-                        const comments = article.comments ? article.comments.length : 0;
-                        return views + (likes + comments) * 5;
-                    };
-                    return getHeatScore(b) - getHeatScore(a);
-                });
-            }
-            
-            // 更新文章数量
-            document.querySelector('.stat-item .count').textContent = userArticles.length;
-            
-            if (userArticles.length === 0) {
-                blogContainer.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px;">
-                        <i class="fas fa-file-alt" style="font-size: 48px; color: #ddd; margin-bottom: 20px;"></i>
-                        <p style="color: #999; font-size: 18px;">还没有发布任何文章</p>
-                        <button class="btn" style="margin-top: 20px;" onclick="window.location.href='createArticle.html'">
-                            <i class="fas fa-plus"></i> 创建第一篇文章
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-            
-            // 生成文章卡片
-            userArticles.forEach(article => {
-                const blogCard = createBlogCard(article);
-                blogContainer.appendChild(blogCard);
-            });
-        }
-        
-        // 创建Fakebook卡片
-        function createBlogCard(article) {
-            const card = document.createElement('div');
-            card.className = 'blog-card';
-            
-            // 格式化日期
-            const date = new Date(article.date);
-            const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            
-            // 生成摘要（取前100个字符）
-            const excerpt = article.content.substring(0, 100) + (article.content.length > 100 ? '...' : '');
-            
-            // 选择图标
-            const icons = ['fa-code', 'fa-laptop-code', 'fa-mobile-alt', 'fa-database', 'fa-server'];
-            const randomIcon = icons[Math.floor(Math.random() * icons.length)];
-            
-            // 计算评论数量 - 从文章对象的comments数组中统计
-            const commentCount = article.comments ? article.comments.length : 0;
-            
-            // 获取作者头像
-            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
-            const author = registeredUsers[article.author.toLowerCase()] || {};
-            const authorAvatar = author.avatar || '../images/default_avatar.jpg';
-            
-            card.innerHTML = `
-                <div class="blog-img" ${article.coverImage ? `style="background-image: url('${article.coverImage}'); background-size: cover; background-position: center;"` : ''}>
-                    ${!article.coverImage ? `<i class="fas ${randomIcon}"></i>` : ''}
-                </div>
-                <div class="blog-content">
-                    <div class="blog-meta" style="display: flex; align-items: center;">
-                        <div class="author-avatar" style="width: 28px; height: 28px; border-radius: 50%; overflow: hidden; margin-right: 10px;">
-                            <img src="${authorAvatar}" alt="${article.author}" style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        <span style="font-weight: 500; margin-right: 10px;">${article.author}</span>
-                        <span><i class="far fa-calendar"></i> ${formattedDate}</span>
-                    </div>
-                    <h3 class="blog-title">${article.title}</h3>
-                    <p class="blog-excerpt">${excerpt}</p>
-                    ${article.tags && article.tags.length > 0 ? `
-                        <div style="margin-bottom: 15px;">
-                            ${article.tags.map(tag => `<span style="display: inline-block; background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 15px; font-size: 12px; margin-right: 8px;">${tag}</span>`).join('')}
-                        </div>
-                    ` : ''}
-                    <div class="blog-footer">
-                        <a href="#" class="read-more" onclick="viewArticle('${article.id}'); return false;">
-                            阅读全文 <i class="fas fa-arrow-right"></i>
-                        </a>
-                        <div class="blog-actions">
-                            <div class="action-btn">
-                                <i class="far fa-eye"></i>
-                                <span style="margin-left: 8px;">${article.views || 0}</span>
-                            </div>
-                            <div class="action-btn">
-                                <i class="${article.likes > 0 ? 'fas' : 'far'} fa-heart"></i>
-                                <span style="margin-left: 8px;">${article.likes || 0}</span>
-                            </div>
-                            <div class="action-btn">
-                                <i class="far fa-comment"></i>
-                                <span style="margin-left: 8px;">${commentCount}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            return card;
-        }
-
-        // 查看文章详情
-        function viewArticle(articleId) {
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            // 找到对应的文章
-            const article = articles.find(a => a.id === articleId);
-            if (article) {
-                // 增加阅读数
-                article.views = (article.views || 0) + 1;
-                // 更新localStorage中的文章数据
-                const updatedArticles = articles.map(a => a.id === articleId ? article : a);
-                localStorage.setItem('articles', JSON.stringify(updatedArticles));
-                // 只存储文章ID而不是整个文章对象
-                localStorage.setItem('currentArticle', articleId);
-                // 设置viewUser为currentUser
-                localStorage.setItem('viewUser', localStorage.getItem('currentUser'));
-                // 跳转到文章详情页
-                window.location.href = 'viewArticle.html';
-            } else {
-                alert('文章不存在');
-            }
         }
     </script>
 </body>

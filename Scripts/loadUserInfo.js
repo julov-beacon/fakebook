@@ -1,15 +1,17 @@
-const User = {
-    studentId: studentId,
-    username: username,
-    password: password,
-    registrationDate: new Date().toISOString(),
-    avatar: "../images/default_avatar.jpg",                  // 默认空头像（可用默认URL）
-    bio: "",                     // 默认空简介
-    following: [],               // 空关注列表（存储用户名）
-    followers: [],                // 空粉丝列表（存储用户名）
-    notices: [],                  // 空通知列表（结构：[{time: 时间字符串, content: 通知内容}]）
-    favorites: []                // 收藏列表（存储字符串数组）
-};
+function createUserObject(studentId, username, password) {
+    return {
+        studentId: studentId,
+        username: username,
+        password: password,
+        registrationDate: new Date().toISOString(),
+        avatar: "../images/default_avatar.jpg",                  // 默认空头像（可用默认URL）
+        bio: "",                     // 默认空简介
+        following: [],               // 空关注列表（存储用户名）
+        followers: [],                // 空粉丝列表（存储用户名）
+        notices: [],                  // 空通知列表（结构：[{time: 时间字符串, content: 通知内容}]）
+        favorites: []                // 收藏列表（存储字符串数组）
+    };
+}
 
 function loadUserInfo() {
     const currentUsername = localStorage.getItem('currentUser');

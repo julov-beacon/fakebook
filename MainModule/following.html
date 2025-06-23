@@ -138,11 +138,29 @@
             loadFollowingArticles();
         }
         
-        // 搜索功能
+        // 实时搜索功能
         function performSearch() {
             const searchInput = document.getElementById('searchInput');
             globalSearchTerm = searchInput.value.trim().toLowerCase();
+            // 实时更新显示的文章卡片
             loadFollowingArticles();
+            
+            // 显示搜索反馈
+            const resultCount = document.querySelectorAll('.blog-card').length;
+            const searchFeedback = document.getElementById('searchFeedback') || document.createElement('div');
+            searchFeedback.id = 'searchFeedback';
+            searchFeedback.style.fontSize = '14px';
+            searchFeedback.style.color = '#666';
+            searchFeedback.style.margin = '10px 0';
+            
+            if (globalSearchTerm) {
+                searchFeedback.textContent = `找到 ${resultCount} 个结果`;
+                if (!document.getElementById('searchFeedback')) {
+                    document.querySelector('.section-header').appendChild(searchFeedback);
+                }
+            } else if (document.getElementById('searchFeedback')) {
+                document.getElementById('searchFeedback').remove();
+            }
         }
         
         // 从localStorage加载用户数据
@@ -154,26 +172,13 @@
             // 加载并显示所有关注用户的文章
             loadFollowingArticles();
             
-            // 为搜索添加监听器
+            // 为搜索添加监听器 - 实时搜索功能
             document.getElementById('searchInput').addEventListener('input', debounce(performSearch, 300));
             
             // 更新通知角标
             updateNotificationBadge();
         });        
 
-        function viewArticle(articleId) {
-            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
-            const article = articles.find(a => a.id === articleId);
-            if (article) {
-                article.views = (article.views || 0) + 1;
-                const updatedArticles = articles.map(a => a.id === articleId ? article : a);
-                localStorage.setItem('articles', JSON.stringify(updatedArticles));
-                localStorage.setItem('currentArticle', articleId);
-                window.location.href = 'viewArticle.html';
-            } else {
-                alert('文章不存在');
-            }
-        }
         function viewUserProfile(username) {
             const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
             if (username === 'admin' || registeredUsers[username]) {
