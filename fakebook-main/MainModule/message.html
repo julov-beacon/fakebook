@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私信 - Fakebook</title>
+    <script>
+        // Prevent theme flash by setting theme before CSS loads
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'day';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="../Style/day-style.css">
+    <link rel="stylesheet" href="../Style/moon-style.css">
+    <script src="../Scripts/loadUserInfo.js"></script>
+    <script src="../Scripts/loadPages.js"></script>
+    <script src="../Scripts/scene.js"></script>
+    <style>
+        /* 隐藏消息输入框的滚动条 */
+        .message-input::-webkit-scrollbar {
+            display: none;
+        }
+        .message-input {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        
+        /* 消息布局样式 */
+        .message-item {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-end;
+            max-width: 80%;
+        }
+        
+        .message-item.sent {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+        
+        .message-item.received {
+            margin-right: auto;
+        }
+        
+        /* 固定消息头像大小 */
+        .message-avatar-small {
+            width: 30px;
+            height: 30px;
+            background-color: #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .message-avatar-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin: 0 10px;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        
+        .message-item.sent .message-bubble {
+            background-color: var(--primary-color);
+            color: white;
+            border-top-right-radius: 5px;
+        }
+        
+        .message-item.received .message-bubble {
+            background-color: var(--light-bg-color);
+            color: var(--text-color);
+            border-top-left-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <nav class="navbar">
+        <div class="logo">
+            <i class="fas fa-blog"></i>
+            <h1>Fakebook</h1>
+        </div>
+        <div class="user-info">
+            <button class="theme-toggle" id="themeToggle" title="切换主题">
+                <i class="fas fa-sun"></i>
+            </button>
+            <div class="nav-avatar">
+                <img src="https://via.placeholder.com/40" alt="User Avatar">
+            </div>
+            <div class="nav-user-details">
+                <span class="nav-username">John Doe</span>
+                <span class="nav-user-id">@johndoe</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- 左侧栏 - 导航菜单 -->
+        <aside class="sidebar sidebar-left">
+            <div class="sidebar-btns" style="display: flex; flex-direction: column; gap: 18px;">
+                <button class="btn outline" id="homeBtn"><i class="fas fa-home"></i> 主页</button>
+                <button class="btn outline" id="explorationBtn"><i class="fas fa-compass"></i> 探索</button>
+                <button class="btn outline" id="followingBtn"><i class="fas fa-heart"></i> 关注</button>
+                <button class="btn outline active" id="messageBtn"><i class="fas fa-envelope"></i> 私信</button>
+                <button class="btn outline"  id="notificationBtn"><i class="fas fa-bell"></i> 通知</button>
+                <button class="btn outline" id="favoritesBtn"><i class="fas fa-bookmark"></i> 收藏</button>
+                <button class="btn outline" id="editProfileBtn"><i class="fas fa-edit"></i> 编辑资料</button>
+                <button class="btn outline" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+                <button class="btn outline" id="createArticleBtn"><i class="fas fa-plus"></i> 新建文章</button>
+            </div>
+        </aside>
+        
+        <!-- 中间内容区 - 保持私信界面不变 -->
+        <main class="content">
+            <div class="section-header">
+                <h2 class="section-title">私信</h2>
+            </div>
+            <div class="chat-layout">
+                
+                <!-- 消息界面 -->
+                <div class="message-container">
+                    <div class="message-header">
+                        <div class="message-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="message-user-info">
+                            <h3 id="currentChatUser">选择对话</h3>
+                            <p id="currentChatStatus">点击下方对话列表选择聊天对象</p>
+                        </div>
+                    </div>
+                    <div class="message-list" id="messageList">
+                        <!-- 消息内容将通过JavaScript动态生成 -->
+                    </div>
+                    <div class="message-input-container">
+                        <textarea class="message-input" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
+                        <button class="send-btn" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- DM 对话列表侧边栏 -->
+                <div class="dm-sidebar">
+                    <div class="dm-header">
+                        <h3>对话列表</h3>
+                    </div>
+                    <div class="dm-conversations" id="dmConversations">
+                        <!-- DM 对话列表将通过 JavaScript 动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 右侧栏 - 用户信息 -->
+        <aside class="sidebar sidebar-right">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <h2>用户名</h2>
+                <p class="user-id">@username · ID: 2023001</p>
+                <p class="user-bio">这个人很懒，什么也没留下。</p>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="count">0</div>
+                    <div class="label">文章</div>
+                </div>
+                <div class="stat-item">
+                    <div class="count">0</div>
+                    <div class="label">粉丝</div>
+                </div>
+            </div>
+            <!-- 添加关注按钮 -->
+            <div id="followBtnContainer" style="margin-top: 20px; display: none;">
+                <button id="followBtn" class="btn" style="width: 100%;">
+                    <i class="fas fa-user-plus"></i> 关注
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentChatTarget = null;
+        let conversations = [];
+        
+        // 初始化messages数组
+        if (!localStorage.getItem('messages')) {
+            localStorage.setItem('messages', JSON.stringify([]));
+        }
+        
+        // 从localStorage加载用户数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+
+            loadPages();
+            
+            // 初始化对话列表
+            initializeConversations();
+            
+            // 加载示例消息
+            loadMessages();
+            
+            // 消息发送功能
+            setupMessageFunctionality();
+        });
+        
+        // 初始化对话列表
+        function initializeConversations() {
+            // 从localStorage获取所有注册用户
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            // 清空现有的对话列表
+            conversations = [];
+            
+            // 遍历所有注册用户，添加到对话列表（除了当前用户自己）
+            for (const username in registeredUsers) {
+                if (username !== currentUsername) {
+                    conversations.push({
+                        username: registeredUsers[username].username,
+                        lastMessage: '点击开始对话',
+                        unread: 0,
+                        status: Math.random() > 0.5 ? 'online' : (Math.random() > 0.5 ? 'away' : 'offline')
+                    });
+                }
+            }
+            
+            // 保存到localStorage
+            localStorage.setItem('dmConversations', JSON.stringify(conversations));
+            
+            // 渲染对话列表
+            renderConversations();
+        }
+        
+        // 渲染对话列表
+        function renderConversations() {
+            const conversationsContainer = document.getElementById('dmConversations');
+            conversationsContainer.innerHTML = '';
+            
+            conversations.forEach((conversation, index) => {
+                const dmItem = createDMItem(conversation, index);
+                conversationsContainer.appendChild(dmItem);
+            });
+        }
+        
+        // 创建DM项目
+        function createDMItem(conversation, index) {
+            const dmItem = document.createElement('div');
+            dmItem.className = 'dm-item';
+            dmItem.dataset.username = conversation.username;
+            
+            const statusClass = conversation.status === 'online' ? '' : conversation.status;
+            
+            // 获取用户头像
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userInfo = registeredUsers[conversation.username.toLowerCase()];
+            let avatarHTML = '<i class="fas fa-user"></i>';
+            
+            if (userInfo && userInfo.avatar) {
+                avatarHTML = `<img src="${userInfo.avatar}" alt="${conversation.username}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            }
+            
+            dmItem.innerHTML = `
+                <div class="dm-avatar">
+                    ${avatarHTML}
+                </div>
+                <div class="dm-name">${conversation.username}</div>
+                ${conversation.unread > 0 ? `<div class="dm-unread">${conversation.unread}</div>` : `<div class="dm-status ${statusClass}"></div>`}
+            `;
+            
+            // 添加点击事件
+            dmItem.addEventListener('click', function() {
+                selectConversation(conversation.username);
+            });
+            
+            return dmItem;
+        }
+        
+        // 选择对话
+        function selectConversation(username) {
+            currentChatTarget = username;
+            
+            // 更新活动状态
+            document.querySelectorAll('.dm-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const selectedItem = document.querySelector(`[data-username="${username}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+            
+            // 获取用户头像
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userInfo = registeredUsers[username.toLowerCase()];
+            
+            // 更新聊天头部
+            document.getElementById('currentChatUser').textContent = username;
+            document.getElementById('currentChatStatus').textContent = '在线';
+            
+            // 更新头像
+            const messageHeaderAvatar = document.querySelector('.message-header .message-avatar');
+            if (userInfo && userInfo.avatar) {
+                messageHeaderAvatar.innerHTML = `<img src="${userInfo.avatar}" alt="${username}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                messageHeaderAvatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            // 加载该对话的消息
+            loadMessagesForUser(username);
+        }
+        
+        // 为特定用户加载消息
+        function loadMessagesForUser(username) {
+            const messageList = document.getElementById('messageList');
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            // 从localStorage获取消息
+            const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+            
+            // 过滤当前用户和指定用户之间的消息
+            const userMessages = messages.filter(msg => 
+                (msg.sender === currentUsername && msg.receiver === username) ||
+                (msg.sender === username && msg.receiver === currentUsername)
+            );
+            
+            messageList.innerHTML = '';
+            
+            if (userMessages.length === 0) {
+                // 如果没有消息，显示欢迎消息
+                const welcomeMessage = {
+                    sender: username,
+                    receiver: currentUsername,
+                    message: `你好！我是${username}，很高兴认识你！`,
+                    timestamp: Date.now()
+                };
+                
+                const messageItem = createMessageItem(welcomeMessage, currentUsername);
+                messageList.appendChild(messageItem);
+            } else {
+                // 显示实际消息
+                userMessages.forEach(message => {
+                    const messageItem = createMessageItem(message, currentUsername);
+                    messageList.appendChild(messageItem);
+                });
+            }
+            
+            // 滚动到底部
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+        
+        // 检查是否已关注
+        function checkIfFollowing(currentUser, viewUser) {
+            if (!currentUser.following) currentUser.following = [];
+            if (!viewUser.followers) viewUser.followers = [];
+            return currentUser.following.includes(viewUser.username);
+        }
+        
+        // 更新关注按钮状态
+        function updateFollowButtonState(button, isFollowing) {
+            if (isFollowing) {
+                button.innerHTML = '<i class="fas fa-user-check"></i> 已关注';
+                button.classList.add('outline');
+            } else {
+                button.innerHTML = '<i class="fas fa-user-plus"></i> 关注';
+                button.classList.remove('outline');
+            }
+        }
+        
+        // 切换关注状态
+        function toggleFollowStatus(currentUser, viewUser) {
+            if (!currentUser.following) currentUser.following = [];
+            if (!viewUser.followers) viewUser.followers = [];
+            
+            const isFollowing = checkIfFollowing(currentUser, viewUser);
+            const followBtn = document.getElementById('followBtn');
+            
+            if (isFollowing) {
+                currentUser.following = currentUser.following.filter(username => username !== viewUser.username);
+                viewUser.followers = viewUser.followers.filter(username => username !== currentUser.username);
+            } else {
+                currentUser.following.push(viewUser.username);
+                viewUser.followers.push(currentUser.username);
+            }
+            
+            updateFollowButtonState(followBtn, !isFollowing);
+            document.querySelectorAll('.stat-item .count')[1].textContent = viewUser.followers.length;
+            saveUserData(currentUser, viewUser);
+        }
+        
+        // 保存用户数据
+        function saveUserData(currentUser, viewUser) {
+            // 获取所有用户
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            // 更新用户数据
+            if (currentUser.username !== 'admin') {
+                registeredUsers[currentUser.username.toLowerCase()] = currentUser;
+            }
+            
+            if (viewUser.username !== 'admin') {
+                registeredUsers[viewUser.username.toLowerCase()] = viewUser;
+            }
+            
+            // 保存回localStorage
+            localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+            
+            // 只保存用户名
+            localStorage.setItem('currentUser', currentUser.username.toLowerCase());
+            localStorage.setItem('viewUser', viewUser.username.toLowerCase());
+        }
+        
+        // 加载示例消息
+        function loadMessages() {
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = `
+                <div style="text-align: center; padding: 60px 20px; color: #999;">
+                    <i class="fas fa-comments" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <p>选择下方的对话开始聊天</p>
+                </div>
+            `;
+        }
+        
+        // 创建消息项
+        function createMessageItem(message, currentUsername) {
+            const messageItem = document.createElement('div');
+            const isSent = message.sender === currentUsername;
+            messageItem.className = `message-item ${isSent ? 'sent' : 'received'}`;
+            
+            // 获取用户头像
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userInfo = isSent ? 
+                registeredUsers[currentUsername.toLowerCase()] : 
+                registeredUsers[message.sender.toLowerCase()];
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar-small';
+            
+            // 设置用户头像
+            if (userInfo && userInfo.avatar) {
+                avatar.innerHTML = `<img src="${userInfo.avatar}" alt="${isSent ? currentUsername : message.sender}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = message.message;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = message.timestamp ? 
+                new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) :
+                new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            messageItem.appendChild(avatar);
+            messageItem.appendChild(bubble);
+            messageItem.appendChild(time);
+            
+            return messageItem;
+        }
+        
+        // 设置消息功能
+        function setupMessageFunctionality() {
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const messageList = document.getElementById('messageList');
+            const currentUsername = localStorage.getItem('currentUser');
+            
+            // 防止重复绑定事件
+            if (messageInput.dataset.eventsBound === 'true') {
+                return;
+            }
+            messageInput.dataset.eventsBound = 'true';
+            sendBtn.dataset.eventsBound = 'true';
+            
+            // 自动调整输入框高度
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+            
+            // 发送消息
+            function sendMessage() {
+                const text = messageInput.value.trim();
+                if (!text || !currentChatTarget) return;
+                
+                const now = new Date();
+                
+                // 创建新消息对象
+                const newMessage = {
+                    sender: currentUsername,
+                    receiver: currentChatTarget,
+                    message: text,
+                    timestamp: now.getTime()
+                };
+                
+                // 保存到localStorage
+                const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+                messages.push(newMessage);
+                localStorage.setItem('messages', JSON.stringify(messages));
+                
+                // 更新对话列表的最后消息
+                updateConversationLastMessage(currentChatTarget, text);
+                
+                // 创建消息项并显示
+                const messageItem = createMessageItem(newMessage, currentUsername);
+                messageList.appendChild(messageItem);
+                
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                
+                // 滚动到底部
+                messageList.scrollTop = messageList.scrollHeight;
+            }
+            
+            // 更新对话的最后消息
+            function updateConversationLastMessage(username, message) {
+                const conversation = conversations.find(c => c.username === username);
+                if (conversation) {
+                    conversation.lastMessage = message;
+                    localStorage.setItem('dmConversations', JSON.stringify(conversations));
+                    renderConversations();
+                    
+                    // 重新选择当前对话以保持活动状态 - 但不重新加载消息
+                    if (currentChatTarget === username) {
+                        // 只更新UI状态，不重新加载消息
+                        document.querySelectorAll('.dm-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        
+                        const selectedItem = document.querySelector(`[data-username="${username}"]`);
+                        if (selectedItem) {
+                            selectedItem.classList.add('active');
+                        }
+                    }
+                }
+            }
+            
+            // 点击发送按钮
+            sendBtn.addEventListener('click', function(e) {
+                sendMessage();
+            });
+            
+            // 按Enter发送消息
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+        
+        // 添加退出登录函数
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = '../UserModule/login.html';
+        }
+    </script>
+</body>
+</html> 

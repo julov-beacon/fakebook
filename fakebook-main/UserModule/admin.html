@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户数据管理工具</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            padding: 0 0 20px 0;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        header {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            max-width: 80%;
+            margin: 0 auto;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
+        }
+        
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+        
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px dashed #667eea;
+        }
+        
+        .info-box ul {
+            padding-left: 25px;
+        }
+        
+        .info-box li {
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #e8f4ff;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .status-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .user-count {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0 20px;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 16px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 8极光 15px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #ff6b6b, #ff4141);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(255, 65, 65, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #f1f3f6;
+            color: #555;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e8ec;
+        }
+        
+        .btn-success {
+            background: linear-gradient(to right, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(to right, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 12px 20px rgba(255, 193, 7, 0.3);
+        }
+        
+        .mock-data-info {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px dashed #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .mock-data-info ul {
+            padding-left: 25px;
+        }
+        
+        .mock-data-info li {
+            margin: 8px 0;
+            line-height: 1.5;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 15px 0;
+            display: none;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .loading-text {
+            text-align: center;
+            color: #28a745;
+            font-weight: 600;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .user-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .user-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.3s;
+        }
+        
+        .user-item:hover {
+            background-color: rgba(240, 248, 255, 0.5);
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+        
+        .username {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .user-detail {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .user-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #ff4141;
+            font-size: 18px;
+            padding: 5px 10px;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .delete-btn:hover {
+            background-color: rgba(255, 65, 65, 0.1);
+            transform: scale(1.1);
+        }
+        
+        .action-section {
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            padding: 20px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: #999;
+            border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .toggle-btn {
+            background: transparent;
+            border: none;
+            color: #667eea;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            padding: 5px;
+            margin-top: 15px;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            header h1 {
+                font-size: 26px;
+            }
+            
+            .btn {
+                padding: 14px 20px;
+                font-size: 16px;
+                flex: 1;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .user-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .user-actions {
+                align-self: flex-end;
+            }
+        }
+        
+        .logo h1 {
+            color: #3498db;
+            font-size: 24px;
+            font-weight: 900;
+            text-shadow: 1px 2px 8px #bdbdbd33, 0 2px 0 #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                <i class="fas fa-database"></i>
+                用户数据管理工具
+            </h1>
+            <p class="subtitle">安全地管理存储在浏览器中的用户注册信息</p>
+        </header>
+        
+        <div class="content">
+            <div class="card">
+                <h2><i class="fas fa-info-circle"></i> 当前数据状态</h2>
+                
+                <div class="status">
+                    <div class="status-label">
+                        <i class="fas fa-users"></i>
+                        已注册用户数:
+                    </div>
+                    <div class="user-count" id="userCount">0</div>
+                </div>
+                
+                <div class="info-box">
+                    <p><i class="fas fa-exclamation-triangle"></i> <strong>警告：</strong>此操作将永久删除用户数据且无法恢复</p>
+                </div>
+                
+                <button class="toggle-btn" id="toggleBtn">
+                    <i class="fas fa-eye"></i>
+                    查看注册用户详情
+                </button>
+                
+                <div class="user-list" id="userList">
+                    <!-- 用户列表将通过JS动态填充 -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-magic"></i> 生成模拟数据</h2>
+                <p>快速生成测试用的用户和文章数据：</p>
+                
+                <div class="mock-data-info">
+                    <ul>
+                        <li><i class="fas fa-user-plus"></i> 生成 5-10 个模拟用户账户</li>
+                        <li><i class="fas fa-newspaper"></i> 为每个用户生成 1-3 篇示例文章</li>
+                        <li><i class="fas fa-comments"></i> 添加模拟评论和点赞数据</li>
+                        <li><i class="fas fa-users"></i> 建立用户之间的关注关系</li>
+                    </ul>
+                </div>
+                
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="loading-text" id="loadingText">
+                    <i class="fas fa-spinner fa-spin"></i> 正在生成模拟数据...
+                </div>
+                
+                <div class="btn-container">
+                    <button class="btn btn-success" id="generateMockDataBtn">
+                        <i class="fas fa-magic"></i> 
+                        生成模拟数据
+                    </button>
+                    <button class="btn btn-warning" id="generateUsersOnlyBtn">
+                        <i class="fas fa-user-plus"></i> 
+                        仅生成用户
+                    </button>
+                </div>
+                
+                <div class="action-section">
+                    <p>生成的数据将保存到本地存储，可用于测试系统功能</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-broom"></i> 清空数据操作</h2>
+                <p>此功能将删除所有用户注册数据：</p>
+                
+                <ul class="info-box">
+                    <li><i class="fas fa-user-times"></i> 所有用户信息将被永久删除</li>
+                    <li><i class="fas fa-id-card"></i> 学号、用户名、密码等都将被移除</li>
+                    <li><i class="fas fa-history"></i> 最后注册的用户记录将被清除</li>
+                </ul>
+                
+                <div class="btn-container">
+                    <button class="btn btn-primary" id="clearBtn">
+                        <i class="fas fa-trash-alt"></i> 
+                        清空所有用户数据
+                    </button>
+                    <button class="btn btn-secondary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> 
+                        刷新数据状态
+                    </button>
+                </div>
+                
+                <div class="action-section">
+                    <p>清除数据后，您可以重新启动系统注册新用户</p>
+                </div>
+
+                <div class="info-box" style="background: rgba(220, 53, 69, 0.1); border: 1px dashed #dc3545;">
+                    <p><i class="fas fa-skull-crossbones"></i> <strong>危险操作：</strong>清除所有本地存储数据，包括用户、文章、评论等所有数据</p>
+                </div>
+                
+                <div class="btn-container">
+                    <button class="btn" style="background: linear-gradient(to right, #dc3545, #c82333); color: white;" id="clearAllBtn">
+                        <i class="fas fa-bomb"></i> 
+                        删除所有本地存储数据
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>用户数据管理工具 &copy; 2023 - 安全数据操作</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const userCountEl = document.getElementById('userCount');
+        const userListEl = document.getElementById('userList');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const generateMockDataBtn = document.getElementById('generateMockDataBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const loadingText = document.getElementById('loadingText');
+        
+        // 更新用户数据显示
+        function updateUserData() {
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userCount = Object.keys(registeredUsers).length;
+            
+            // 更新用户计数
+            userCountEl.textContent = userCount;
+            
+            // 更新用户列表
+            userListEl.innerHTML = '';
+            
+            if(userCount > 0) {
+                Object.values(registeredUsers).forEach(user => {
+                    const userItem = document.createElement('div');
+                    userItem.className = 'user-item';
+                    
+                    const registrationDate = new Date(user.registrationDate || Date.now()).toLocaleDateString();
+                    
+                    userItem.innerHTML = `
+                        <div class="user-info">
+                            <div class="username">${user.username}</div>
+                            <div class="user-detail">
+                                <span>学号: ${user.studentId || '无'}</span>
+                                <span>注册时间: ${registrationDate}</span>
+                            </div>
+                        </div>
+                        <div class="user-actions">
+                            <button class="delete-btn" data-student-id="${user.studentId}" data-username="${user.username.toLowerCase()}">
+                                <i class="fas fa-trash-alt"></i> 删除
+                            </button>
+                        </div>
+                    `;
+                    
+                    userListEl.appendChild(userItem);
+                });
+                
+                // 为所有删除按钮添加事件监听器
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const studentId = this.getAttribute('data-student-id');
+                        const username = this.getAttribute('data-username');
+                        deleteUser(studentId, username);
+                    });
+                });
+                
+            } else {
+                userListEl.innerHTML = '<div class="user-item" style="justify-content: center; color: #777;"><i class="fas fa-user-slash"></i> 未找到注册用户</div>';
+            }
+        }
+        
+        // 删除特定用户 (已修复)
+        function deleteUser(studentId, usernameKey) {
+            if(!studentId || !usernameKey) {
+                alert('用户信息不完整，无法删除！');
+                return;
+            }
+            
+            if(!confirm(`您确定要删除学号为 ${studentId} 的用户吗？此操作不可撤销！`)) {
+                return;
+            }
+            
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            
+            if(registeredUsers[usernameKey]) {
+                // 直接通过用户名键删除用户
+                delete registeredUsers[usernameKey];
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                
+                // 更新显示
+                updateUserData();
+                
+                // 显示成功消息
+                alert(`学号为 ${studentId} 的用户已成功删除！`);
+            } else {
+                alert('未找到该用户，删除失败！');
+            }
+        }
+        
+        // 切换用户列表显示状态
+        toggleBtn.addEventListener('click', () => {
+            if(userListEl.style.display === 'block') {
+                userListEl.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> 查看注册用户详情';
+            } else {
+                userListEl.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏用户详情';
+            }
+        });
+        
+        // 清空数据
+        clearBtn.addEventListener('click', () => {
+            // 确认对话框
+            if(confirm('警告：此操作将永久删除所有用户数据！\n\n确定要清空所有用户注册数据吗？')) {
+                // 清空用户数据
+                localStorage.removeItem('registeredUsers');
+                localStorage.removeItem('lastRegisteredUsername');
+                localStorage.clear();
+                
+                // 更新显示
+                updateUserData();
+            }
+        });
+        
+        // 刷新数据
+        refreshBtn.addEventListener('click', () => {
+            updateUserData();
+        });
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUserData();
+            
+            // 如果用户数>0，自动展开用户列表
+            const userCount = parseInt(userCountEl.textContent);
+            if(userCount > 0) {
+                userListEl.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏用户详情';
+            }
+        });
+
+        // 通过 open API 获取模拟用户数据
+        async function fetchAndSaveMockUsers(count = 8) {
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            loadingText.style.display = 'block';
+            loadingText.textContent = '正在从 open API 获取模拟用户...';
+            try {
+                const res = await fetch(`https://randomuser.me/api/?results=${count}&nat=us,cn`);
+                const data = await res.json();
+                const users = data.results;
+                let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+                let now = Date.now();
+                users.forEach((user, idx) => {
+                    // 构造学号: 4位年份+6位数字
+                    const year = 2020 + Math.floor(Math.random() * 4); // 2020-2023
+                    const num = (Math.floor(Math.random() * 1000000)).toString().padStart(6, '0');
+                    const studentId = `${year}${num}`;
+                    // 用户名
+                    const username = user.login.username;
+                    // 密码
+                    const password = user.login.password;
+                    // 头像
+                    const avatar = user.picture.large || '../images/default_avatar.jpg';
+                    // 注册日期
+                    const registrationDate = new Date(now - idx * 86400000).toISOString();
+                    // 构造用户对象
+                    registeredUsers[username.toLowerCase()] = {
+                        studentId,
+                        username,
+                        password,
+                        registrationDate,
+                        avatar,
+                        bio: user.email,
+                        following: [],
+                        followers: []
+                    };
+                    progressFill.style.width = `${Math.round(((idx+1)/users.length)*100)}%`;
+                });
+                localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+                loadingText.textContent = '模拟用户已保存到本地！';
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    loadingText.style.display = 'none';
+                    updateUserData();
+                }, 1000);
+            } catch (e) {
+                loadingText.textContent = '获取失败，请检查网络或稍后重试。';
+                progressBar.style.display = 'none';
+                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+            }
+        }
+
+        // 通过 API 获取模拟文章数据
+        async function fetchAndSaveMockArticles() {
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userList = Object.values(registeredUsers);
+            
+            if (userList.length === 0) {
+                alert('请先生成模拟用户！');
+                return;
+            }
+
+            loadingText.textContent = '正在从 API 获取模拟文章...';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+
+            try {
+                // 从 JSONPlaceholder API 获取文章数据
+                const articlesResponse = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=15');
+                const articlesData = await articlesResponse.json();
+                
+                let existingArticles = JSON.parse(localStorage.getItem('articles') || '[]');
+                const tags = ['编程', '前端', '后端', 'JavaScript', 'React', 'Vue', 'Node.js', 'CSS', 'HTML', '数据库', 'API', '性能优化', '测试', '部署', '团队协作'];
+
+                articlesData.forEach((article, idx) => {
+                    const randomUser = userList[Math.floor(Math.random() * userList.length)];
+                    const randomTags = tags.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1);
+                    const randomLikes = Math.floor(Math.random() * 50);
+                    const randomViews = Math.floor(Math.random() * 200) + 50;
+                    
+                    const mockArticle = {
+                        id: Date.now().toString() + idx,
+                        title: article.title,
+                        content: article.body + '\n\n' + '这是一篇从 API 获取的模拟文章，用于测试系统功能。',
+                        tags: randomTags,
+                        author: randomUser.username,
+                        authorAvatar: randomUser.avatar,
+                        date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        coverImage: null,
+                        likes: randomLikes,
+                        comments: [],
+                        views: randomViews
+                    };
+                    
+                    existingArticles.push(mockArticle);
+                    progressFill.style.width = `${Math.round(((idx+1)/articlesData.length)*100)}%`;
+                });
+
+                localStorage.setItem('articles', JSON.stringify(existingArticles));
+                loadingText.textContent = '模拟文章已从 API 获取并保存！';
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    loadingText.style.display = 'none';
+                }, 1000);
+                
+            } catch (e) {
+                loadingText.textContent = '获取文章失败，请稍后重试。';
+                progressBar.style.display = 'none';
+                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+            }
+        }
+
+        // 通过 API 获取模拟评论数据
+        async function fetchAndSaveMockComments() {
+            const articles = JSON.parse(localStorage.getItem('articles') || '[]');
+            const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '{}');
+            const userList = Object.values(registeredUsers);
+            
+            if (articles.length === 0) {
+                alert('请先生成模拟文章！');
+                return;
+            }
+
+            if (userList.length === 0) {
+                alert('请先生成模拟用户！');
+                return;
+            }
+
+            loadingText.textContent = '正在从 API 获取模拟评论...';
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+
+            try {
+                // 从 JSONPlaceholder API 获取评论数据
+                const commentsResponse = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=30');
+                const commentsData = await commentsResponse.json();
+                
+                let processedComments = 0;
+                const totalExpectedComments = articles.length * 3; // 每篇文章3条评论
+
+                articles.forEach((article, articleIdx) => {
+                    const commentCount = Math.min(3, commentsData.length - processedComments); // 最多3条评论
+                    
+                    // 确保文章对象有comments数组
+                    if (!article.comments) {
+                        article.comments = [];
+                    }
+                    
+                    for (let i = 0; i < commentCount; i++) {
+                        const commentIndex = processedComments + i;
+                        if (commentIndex < commentsData.length) {
+                            const apiComment = commentsData[commentIndex];
+                            const randomUser = userList[Math.floor(Math.random() * userList.length)];
+                            
+                            const mockComment = {
+                                id: Date.now().toString() + articleIdx + i,
+                                content: apiComment.body + ' (来自API的模拟评论)',
+                                author: randomUser.username,
+                                authorAvatar: randomUser.avatar,
+                                date: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+                                articleId: article.id
+                            };
+                            
+                            // 将评论直接添加到文章对象的comments数组中
+                            article.comments.push(mockComment);
+                        }
+                        processedComments++;
+                        progressFill.style.width = `${Math.round((processedComments/totalExpectedComments)*100)}%`;
+                    }
+                });
+
+                // 保存更新后的文章数据（包含评论）
+                localStorage.setItem('articles', JSON.stringify(articles));
+                loadingText.textContent = '模拟评论已从 API 获取并保存到文章对象中！';
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    loadingText.style.display = 'none';
+                }, 1000);
+                
+            } catch (e) {
+                loadingText.textContent = '获取评论失败，请稍后重试。';
+                progressBar.style.display = 'none';
+                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+            }
+        }
+
+        // 完整的模拟数据生成流程 - 全部使用 API
+        async function generateCompleteMockData() {
+            loadingText.style.display = 'block';
+            progressBar.style.display = 'block';
+            
+            try {
+                // 1. 从 RandomUser API 生成用户
+                loadingText.textContent = '步骤 1/3: 正在从 RandomUser API 获取模拟用户...';
+                progressFill.style.width = '0%';
+                await fetchAndSaveMockUsers(8);
+                
+                // 2. 从 JSONPlaceholder API 生成文章
+                loadingText.textContent = '步骤 2/3: 正在从 JSONPlaceholder API 获取模拟文章...';
+                progressFill.style.width = '33%';
+                await fetchAndSaveMockArticles();
+                
+                // 3. 从 JSONPlaceholder API 生成评论
+                loadingText.textContent = '步骤 3/3: 正在从 JSONPlaceholder API 获取模拟评论...';
+                progressFill.style.width = '66%';
+                await fetchAndSaveMockComments();
+                
+                progressFill.style.width = '100%';
+                loadingText.textContent = '所有模拟数据已从 API 获取完成！';
+                
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                    loadingText.style.display = 'none';
+                    updateUserData();
+                }, 2000);
+                
+            } catch (e) {
+                loadingText.textContent = 'API 获取失败，请检查网络或稍后重试。';
+                progressBar.style.display = 'none';
+                setTimeout(() => { loadingText.style.display = 'none'; }, 2000);
+            }
+        }
+
+        generateMockDataBtn.addEventListener('click', function() {
+            generateCompleteMockData();
+        });
+
+        // 清空所有localStorage数据
+        clearAllBtn.addEventListener('click', () => {
+            // 确认对话框，使用更严厉的警告
+            if(confirm('⚠️ 危险操作警告 ⚠️\n\n此操作将永久删除所有本地存储的数据，包括：\n- 所有用户数据\n- 所有文章数据\n- 所有评论数据\n- 所有系统配置\n\n此操作无法撤销！确定要继续吗？')) {
+                // 清空所有localStorage数据
+                localStorage.clear();
+                
+                // 更新显示
+                updateUserData();
+                
+                // 显示成功消息
+                alert('已成功清除所有本地存储数据！');
+            }
+        });
+    </script>
+</body>
+</html>
